@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Felicity Solar (Shine) Mobile App API - Unofficial
+  version: 4.1.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  description: |
+    **Unofficial, community-maintained documentation.** This project is not affiliated with, endorsed by or
+    supported by Felicity Solar. The API is private and undocumented by its vendor; it was described by
+    analysing the publicly distributed Android app (v4.1.0) for interoperability purposes, and it may change or
+    stop working at any time. Use it only with your own account and in line with the vendor's terms of service.
+    "Felicity Solar" and "Shine" are trademarks of their respective owners.
+
+    Where the client code did not reveal a detail (units, enum meanings, server-side behaviour), the
+    description says so instead of guessing.
+
+    ## Basics
+    * **Base URL:** `https://shine-api.felicitysolar.com`. JSON over HTTPS; most endpoints are `POST`.
+    * **Envelope:** every response is `{"code": int, "message": string, "data": ...}`. HTTP status is `200`
+      even for business errors, so always check `code`.
+    * **Auth:** call `POST /app/base/userlogin`, then send the returned `data.token` in the `Authorization`
+      header as a raw value (no `Bearer` prefix). There is no refresh endpoint; log in again on code `998`.
+    * **Headers:** the app sends `lang` (locale such as `en_US`), `source: ANDROID` and `version` (e.g. `4.1.0`)
+      on every call, plus `Authorization` after login.
+    * **Regions:** the login response contains `nodeList[]` with an `apiAddress`. The app uses the stored
+      `apiAddress` of the user's node as the base URL for later calls and falls back to production.
+      These values come from the server and are not published here.
+    * **Passwords** are never sent in clear text: they are RSA-encrypted client-side. See
+      `docs/authentication.md` in the repository for the scheme.
+    * **Pagination:** paged `POST` bodies take `pageNum` (1-based) and `pageSize`; see `PageRequest` and `PagedData`.
+
+    ## Response codes
+    | `code` | Meaning |
+    |---|---|
+    | 200 | Success |
+    | 998 | Token invalid, expired or logged in elsewhere - log in again |
+    | 1017 | System under maintenance (`data` holds the message text) |
+    | 1006062 | App version update required |
+    | other | Business error; see `message` |
+
+    ## Conventions
+    * "Form post" in an endpoint description means `application/x-www-form-urlencoded`; otherwise bodies are JSON.
+    * Parameter and field names are case-sensitive and exactly as the server expects them, including
+      misspellings (for example `lable`, `weekPasswordType`).
+    * Many numeric counters and timestamps are serialised as strings; check each schema.
+    * Only endpoints that the app actually calls are documented. A larger set of path constants exists in the
+      app but is unused, and is deliberately left out.
+servers:
+  - url: https://shine-api.felicitysolar.com
+    description: Production (default). Accounts may be routed to a regional host, see "Regions" above.
+components:
+  securitySchemes:
+    ApiToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: >-
+        Opaque session token returned in `data.token` of the login/demo-login/switchUsers response.
+        Sent as the raw value (no `Bearer` prefix). Omitted before login. No refresh endpoint exists;
+        `code 998` means the token is invalid and the user must log in again.
+  parameters:
+    Lang:
+      name: lang
+      in: header
+      required: false
+      schema: {type: string, example: en_US}
+      description: >-
+        UI locale code as stored by the app (`en_US`, `zh_CN`, `de_DE`, `pl_PL`, `cs_CZ`, `es_ES`, `uk_UK`, `it_IT`,
+        `fr_FR`, `my_MM`, `ar_SA`, `pt_BR`, `ru_RU`, `ro_RO`, `vi_VN`). Affects localised message/label text.
+    Source:
+      name: source
+      in: header
+      required: false
+      schema: {type: string, enum: [ANDROID], default: ANDROID}
+      description: Client platform marker, literal `ANDROID`.
+    AppVersion:
+      name: version
+      in: header
+      required: false
+      schema: {type: string, example: 4.1.0}
+      description: App version name.
+    Node:
+      name: Node
+      in: header
+      required: false
+      schema: {type: string, example: INT}
+      description: >-
+        Account node/region code (`nodeCode`, default `INT`). Only sent by a few calls (for example the registration country list);
+        region routing is otherwise done by switching the base URL to the node `apiAddress`.
+  schemas:
+    ApiEnvelope:
+      type: object
+      properties:
+        code: {type: integer, description: "200 success; 998 token invalid (re-login); 1017 system maintenance (data = text); 1006062 app version update required; others are business errors"}
+        message: {type: string, nullable: true}
+        data: {description: Payload; type depends on endpoint, nullable: true}
+      required: [code]
+    PageRequest:
+      type: object
+      description: Common paging fields of paged POST bodies (merge into the endpoint-specific request).
+      properties:
+        pageNum: {type: integer, minimum: 1, description: 1-based page number}
+        pageSize: {type: integer, description: "Page size; app default 20, plant lists 10"}
+        noTotalNumber: {type: boolean, description: "true = server skips counting total"}
+    PagedData:
+      type: object
+      description: Typical paged response payload (field set varies slightly per entity; counters are often strings).
+      properties:
+        currentPage: {type: string}
+        pageSize: {type: string}
+        total: {type: string}
+        totalPage: {type: string}
+        dataList: {type: array, items: {}}
+security:
+  - ApiToken: []

@@ -1,0 +1,2912 @@
+paths:
+  "/app/customerComplaintOrder/getCustomerComplaintOrderList":
+    post:
+      operationId: "getCustomerComplaintOrderList"
+      summary: "List customer complaint orders"
+      description: "Paged search of complaint (service) orders. Extra filter keys come from a UI search map and are merged into the body; productTypeIds and productModels, if present, are wrapped as a single-element string array."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                keywords:
+                  type: "string"
+                  description: "search keywords (optional)"
+                productTypeIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                productModels:
+                  type: "array"
+                  items:
+                    type: "string"
+                "<other filters>":
+                  type: "string"
+                  description: "additional filter keys from search UI; names not statically determined"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderListResponse"
+  "/app/customerComplaintOrder/getCustomerComplaintOrderDetail":
+    post:
+      operationId: "getCustomerComplaintOrderDetail"
+      summary: "Get complaint order detail"
+      description: "Returns one complaint order with files, handles, operations and permission flags."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "order id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderDetailResponse"
+  "/app/customerComplaintOrder/getCustomerComplaintReplyList":
+    post:
+      operationId: "getCustomerComplaintReplyList"
+      summary: "List complaint order replies"
+      description: "Paged replies (messages) of a complaint order."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                id:
+                  type: "string"
+                  description: "order id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintReplyListResponse"
+  "/app/customerComplaintOrder/save_customerComplaintOrder":
+    post:
+      operationId: "saveCustomerComplaintOrder"
+      summary: "Create complaint order"
+      description: "Creates a new complaint order. The same client method calls update_customerComplaintOrder (with id) when editing."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                responsibleUserId:
+                  type: "string"
+                  description: "current user id (UID from preferences)"
+                flowNodesType:
+                  type: "integer"
+                  description: "1 overseas CS, 2 domestic CS, 3 engineer, 4 R&D"
+                countryName:
+                  type: "string"
+                customerContact:
+                  type: "string"
+                contactAddress:
+                  type: "string"
+                questionDesc:
+                  type: "string"
+                productTypeIds:
+                  type: "array"
+                  items:
+                    type: "integer"
+                productModelDeviceSns:
+                  type: "object"
+                  description: "map deviceModel -> list of device SNs"
+                  additionalProperties:
+                    type: "array"
+                    items:
+                      type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "object"
+                    properties:
+                      fileId:
+                        type: "string"
+                      type:
+                        type: "string"
+                      fileType:
+                        type: "string"
+                      fileUrl:
+                        type: "string"
+                    description: "Subset of FileResponseEntity: fileId, type, fileType, fileUrl"
+                priority:
+                  type: "integer"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderSaveResponse"
+  "/app/customerComplaintOrder/update_customerComplaintOrder":
+    post:
+      operationId: "updateCustomerComplaintOrder"
+      summary: "Update complaint order"
+      description: "Updates an existing complaint order; body identical to create plus id."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                responsibleUserId:
+                  type: "string"
+                  description: "current user id (UID from preferences)"
+                flowNodesType:
+                  type: "integer"
+                  description: "1 overseas CS, 2 domestic CS, 3 engineer, 4 R&D"
+                countryName:
+                  type: "string"
+                customerContact:
+                  type: "string"
+                contactAddress:
+                  type: "string"
+                questionDesc:
+                  type: "string"
+                productTypeIds:
+                  type: "array"
+                  items:
+                    type: "integer"
+                productModelDeviceSns:
+                  type: "object"
+                  description: "map deviceModel -> list of device SNs"
+                  additionalProperties:
+                    type: "array"
+                    items:
+                      type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "object"
+                    properties:
+                      fileId:
+                        type: "string"
+                      type:
+                        type: "string"
+                      fileType:
+                        type: "string"
+                      fileUrl:
+                        type: "string"
+                    description: "Subset of FileResponseEntity: fileId, type, fileType, fileUrl"
+                priority:
+                  type: "integer"
+                id:
+                  type: "string"
+                  description: "order id"
+              required:
+                - "id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderUpdateResponse"
+  "/app/customerComplaintOrder/deleteCustomerComplaintOrder":
+    post:
+      operationId: "deleteCustomerComplaintOrder"
+      summary: "Delete complaint order"
+      description: "Deletes a complaint order by id."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderDeleteResponse"
+  "/app/customerComplaintOrder/delete_customerComplaintHandle":
+    post:
+      operationId: "deleteCustomerComplaintHandle"
+      summary: "Delete complaint handling record"
+      description: "Deletes a handling record (ComplaintHandle) by its id."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "handle record id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintHandleDeleteResponse"
+  "/app/customerComplaintOrder/assignOrder":
+    post:
+      operationId: "assignComplaintOrder"
+      summary: "Assign complaint order"
+      description: "Assigns/transfers an order to one or more responsible users and sets flow node/priority."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "order id"
+                flowNodesType:
+                  type: "integer"
+                  description: "1 overseas CS, 2 domestic CS, 3 engineer, 4 R&D"
+                priority:
+                  type: "integer"
+                notes:
+                  type: "string"
+                responsibleUserId:
+                  type: "string"
+                  description: "comma-separated user ids (list ids joined with \",\"; also a single id)"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderAssignResponse"
+  "/app/customerComplaintOrder/handleOrder":
+    post:
+      operationId: "handleComplaintOrder"
+      summary: "Handle complaint order"
+      description: "Submits a handling/solution step for an order."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "order id"
+                solutionType:
+                  type: "integer"
+                status:
+                  type: "integer"
+                  description: "optional, sent only when >= 0"
+                notes:
+                  type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "object"
+                    properties:
+                      fileId:
+                        type: "string"
+                      type:
+                        type: "string"
+                      fileType:
+                        type: "string"
+                      fileUrl:
+                        type: "string"
+                    description: "Subset of FileResponseEntity: fileId, type, fileType, fileUrl"
+                deviceSn:
+                  type: "string"
+                reviewerUserId:
+                  type: "string"
+                executorUserId:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderHandleResponse"
+  "/app/customerComplaintOrder/replyOrder":
+    post:
+      operationId: "replyComplaintOrder"
+      summary: "Reply to complaint order"
+      description: "Adds a reply (and optional files / new responsible user) to an order; returns the created reply."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "order id"
+                notes:
+                  type: "string"
+                  description: "reply text"
+                responsibleUserId:
+                  type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "object"
+                    properties:
+                      fileId:
+                        type: "string"
+                      type:
+                        type: "string"
+                      fileType:
+                        type: "string"
+                      fileUrl:
+                        type: "string"
+                    description: "Subset of FileResponseEntity: fileId, type, fileType, fileUrl"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderReplyResponse"
+  "/app/customerComplaintOrder/reviewOrder":
+    post:
+      operationId: "reviewComplaintOrder"
+      summary: "Review (audit) complaint order"
+      description: "Approves/rejects an order."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                reviewStatus:
+                  type: "string"
+                  description: "review result code (values not determined)"
+                rejectReason:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplaintOrderReviewResponse"
+  "/app/customerComplaintOrder/getDeviceSnByModel":
+    post:
+      operationId: "getDeviceSnByModel"
+      summary: "List device SNs by model"
+      description: "Paged lookup of device serial numbers for a product model (page 1)."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                deviceModel:
+                  type: "string"
+                deviceSn:
+                  type: "string"
+                  description: "search text"
+                pageNum:
+                  type: "integer"
+                pageSize:
+                  type: "integer"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/DeviceSnByModelResponse"
+  "/app/customerComplaintOrder/getProductModelList":
+    post:
+      operationId: "getProductModelList"
+      summary: "List product models"
+      description: "Returns product models matching the text."
+      tags:
+        - "Complaint"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                deviceModel:
+                  type: "string"
+                  description: "search text"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ProductModelListResponse"
+  "/app/feedBack/details":
+    post:
+      operationId: "getFeedbackDetails"
+      summary: "Get feedback (after-sales) detail"
+      description: "Detail of a feedback/rescue ticket. The client optionally also sends scope."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                  description: "feedback id"
+                scope:
+                  type: "integer"
+                  description: "optional view scope"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackDetailResponse"
+  "/app/feedBack/submit_device":
+    post:
+      operationId: "submitFeedbackDevice"
+      summary: "Submit device feedback"
+      description: "Creates a feedback about a device (no id given). The same client method hits /app/feedBack/update when id is given."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                deviceSn:
+                  type: "string"
+                plantId:
+                  type: "string"
+                subject:
+                  type: "string"
+                description:
+                  type: "string"
+                notes:
+                  type: "string"
+                countryId:
+                  type: "string"
+                countryName:
+                  type: "string"
+                provinceId:
+                  type: "string"
+                provinceName:
+                  type: "string"
+                cityId:
+                  type: "string"
+                cityName:
+                  type: "string"
+                deviceAddress:
+                  type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "string"
+                    description: "uploaded file id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackSubmitDeviceResponse"
+  "/app/feedBack/update":
+    post:
+      operationId: "updateFeedback"
+      summary: "Edit device feedback"
+      description: "Edits an existing feedback; same fields as submit_device plus id, coverFlag=true and coverFileIds replacing files."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                coverFlag:
+                  type: "boolean"
+                  description: "always true"
+                coverFileIds:
+                  type: "array"
+                  items:
+                    type: "string"
+                deviceSn:
+                  type: "string"
+                plantId:
+                  type: "string"
+                subject:
+                  type: "string"
+                description:
+                  type: "string"
+                notes:
+                  type: "string"
+                countryId:
+                  type: "string"
+                countryName:
+                  type: "string"
+                provinceId:
+                  type: "string"
+                provinceName:
+                  type: "string"
+                cityId:
+                  type: "string"
+                cityName:
+                  type: "string"
+                deviceAddress:
+                  type: "string"
+              required:
+                - "id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackUpdateResponse"
+  "/app/fedBack/submit_System":
+    post:
+      operationId: "submitFeedbackSystem"
+      summary: "Submit system feedback (multipart)"
+      description: "Submits a system/app feedback with attachments. multipart/form-data, files in part \"files\". Timeout 30s."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "multipart/form-data":
+            schema:
+              type: "object"
+              properties:
+                userName:
+                  type: "string"
+                phone:
+                  type: "string"
+                email:
+                  type: "string"
+                subject:
+                  type: "string"
+                description:
+                  type: "string"
+                files:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "binary"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackSubmitSystemResponse"
+  "/app/fedBack/history_list":
+    post:
+      operationId: "getFeedbackHistoryList"
+      summary: "List feedback history"
+      description: "Paged list of the user's feedback tickets (note path spelling \"fedBack\")."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                fedBackType:
+                  type: "integer"
+                  description: "feedback type"
+                handleStatus:
+                  type: "string"
+                  description: "optional status filter, 0..4"
+                getAssignMe:
+                  type: "boolean"
+                  description: "only sent when true: tickets assigned to me"
+                keywords:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackHistoryListResponse"
+  "/feedBackRecord/list_feedBack_record":
+    post:
+      operationId: "listFeedbackRecord"
+      summary: "List feedback conversation messages"
+      description: "Paged messages of a feedback ticket. NOTE path has no /app prefix."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                feedBackId:
+                  type: "string"
+                pageNum:
+                  type: "integer"
+                pageSize:
+                  type: "integer"
+                  default: 10
+                timeZone:
+                  type: "string"
+                  description: "device default time zone id"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackRecordListResponse"
+  "/app/feedBack/crate_feedback_record":
+    post:
+      operationId: "createFeedbackRecord"
+      summary: "Post feedback message (multipart)"
+      description: "Adds a message (text and/or files) to a feedback ticket (path typo \"crate\" is real). multipart/form-data, files in part \"file\"."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "multipart/form-data":
+            schema:
+              type: "object"
+              properties:
+                feedBackId:
+                  type: "string"
+                content:
+                  type: "string"
+                type:
+                  type: "string"
+                  description: "message type"
+                timeZone:
+                  type: "string"
+                file:
+                  type: "array"
+                  items:
+                    type: "string"
+                    format: "binary"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackRecordCreateResponse"
+  "/app/feedBack/examiner_after_sales":
+    post:
+      operationId: "examineAfterSales"
+      summary: "Verify (accept) after-sales ticket"
+      description: "Accept/reject the handling result of a ticket."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                feedBackId:
+                  type: "string"
+                notes:
+                  type: "string"
+                examinerStatus:
+                  type: "integer"
+                  description: "verification result code (values not determined)"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackExaminerResponse"
+  "/app/feedBack/assign_after_sales":
+    post:
+      operationId: "assignAfterSales"
+      summary: "Assign after-sales ticket"
+      description: "Assigns a feedback ticket to an after-sales user."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                responsibleUserId:
+                  type: "string"
+                feedBackId:
+                  type: "string"
+                discretion:
+                  type: "string"
+                  description: "assignment remark"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackAssignResponse"
+  "/app/feedBackEvaluate/save_feedBackEvaluate":
+    post:
+      operationId: "saveFeedbackEvaluate"
+      summary: "Rate a finished feedback"
+      description: "Submits star ratings (floats) for a ticket."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                feedBackId:
+                  type: "string"
+                evaluateTotal:
+                  type: "number"
+                  format: "float"
+                evaluateRespond:
+                  type: "number"
+                  format: "float"
+                evaluateQuality:
+                  type: "number"
+                  format: "float"
+                evaluateEfficient:
+                  type: "number"
+                  format: "float"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackEvaluateResponse"
+  "/app/feedBackHandle/list_feedBackHandle":
+    post:
+      operationId: "listFeedbackHandle"
+      summary: "List feedback handling records"
+      description: "Paged handling (maintenance) records of a ticket."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                feedBackId:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackHandleListResponse"
+  "/app/feedBackHandle/save_feedBackHandle":
+    post:
+      operationId: "saveFeedbackHandle"
+      summary: "Save feedback handling record"
+      description: "Adds a handling/maintenance record to a ticket."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                feedBackId:
+                  type: "string"
+                name:
+                  type: "string"
+                phoneZone:
+                  type: "string"
+                phone:
+                  type: "string"
+                maintenanceTime:
+                  type: "integer"
+                  description: "epoch ms"
+                  format: "int64"
+                timePeriod:
+                  type: "string"
+                handleType:
+                  type: "string"
+                handleDesc:
+                  type: "string"
+                newDeviceSn:
+                  type: "string"
+                handleStatus:
+                  type: "integer"
+                fileIds:
+                  type: "array"
+                  items:
+                    type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackHandleSaveResponse"
+  "/app/feedBack/list":
+    post:
+      operationId: "listFeedbackHandleTickets"
+      summary: "List feedback tickets (staff view)"
+      description: "Paged ticket list for handlers; extra filter keys merged from a search map."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                scope:
+                  type: "integer"
+                handleStatus:
+                  type: "string"
+                keywords:
+                  type: "string"
+                "<other filters>":
+                  type: "string"
+                  description: "additional search keys; names not statically determined"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackTicketListResponse"
+  "/app/feedBack/getPlantAddress":
+    get:
+      operationId: "getFeedbackPlantAddress"
+      summary: "Get plant of a device"
+      description: "Returns the plant address record for a device serial number."
+      tags:
+        - "Feedback"
+      security:
+        - ApiToken: []
+      parameters:
+        - name: "deviceSn"
+          in: "query"
+          required: false
+          description: "device serial number"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/FeedbackPlantAddressResponse"
+  "/app/compainRecord/list_compainRecord":
+    post:
+      operationId: "listComplainRecord"
+      summary: "List complaint (fault) records"
+      description: "Paged list of device complaint records (path spelling \"compain\")."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                keywords:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplainRecordListResponse"
+  "/app/compainRecord/save_compainRecord":
+    post:
+      operationId: "saveComplainRecord"
+      summary: "Save complaint record"
+      description: "Creates a complaint record; client calls the sibling update endpoint (not in this list) when id is set."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                deviceSn:
+                  type: "string"
+                deviceModel:
+                  type: "string"
+                countryName:
+                  type: "string"
+                faultDesc:
+                  type: "string"
+                damagePcb:
+                  type: "string"
+                componentOrTypeNo:
+                  type: "string"
+                newNo:
+                  type: "string"
+                notes:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplainRecordSaveResponse"
+  "/app/compainRecord/delete_compainRecord/{id}":
+    get:
+      operationId: "deleteComplainRecord"
+      summary: "Delete complaint record"
+      description: "Deletes by id. Uses HTTP GET in the client."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "record id"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/ComplainRecordDeleteResponse"
+  "/app/repairRecord/list_repairRecord":
+    post:
+      operationId: "listRepairRecord"
+      summary: "List repair records"
+      description: "Paged repair records; extra filter keys merged from a search map."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                  description: "1-based page number"
+                pageSize:
+                  type: "integer"
+                  description: "page size"
+                keywords:
+                  type: "string"
+                "<other filters>":
+                  type: "string"
+                  description: "search keys; names not determined"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/RepairRecordListResponse"
+  "/app/repairRecord/save_repairRecord":
+    post:
+      operationId: "saveRepairRecord"
+      summary: "Save repair record"
+      description: "Creates a repair record (client calls the sibling update endpoint when id set; not in this list). All fields optional and sent only if non-empty."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                type:
+                  type: "string"
+                dateTime:
+                  type: "string"
+                repairNo:
+                  type: "string"
+                countryId:
+                  type: "string"
+                customerName:
+                  type: "string"
+                customerPhone:
+                  type: "string"
+                countryName:
+                  type: "string"
+                cityId:
+                  type: "string"
+                city:
+                  type: "string"
+                city2Id:
+                  type: "string"
+                city2:
+                  type: "string"
+                productModel:
+                  type: "string"
+                deviceSn:
+                  type: "string"
+                faultDesc:
+                  type: "string"
+                faultBoard:
+                  type: "string"
+                damagedComponent:
+                  type: "string"
+                solution:
+                  type: "string"
+                repairEngineer:
+                  type: "string"
+                mosIgbtModel:
+                  type: "string"
+                warrantyPeriod:
+                  type: "string"
+                withoutWarranty:
+                  type: "string"
+                chargeAmount:
+                  type: "string"
+                remark:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/RepairRecordSaveResponse"
+  "/app/repairRecord/delete_repairRecord/{id}":
+    get:
+      operationId: "deleteRepairRecord"
+      summary: "Delete repair record"
+      description: "Deletes by id. Uses HTTP GET in the client."
+      tags:
+        - "Record"
+      security:
+        - ApiToken: []
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "record id"
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/RepairRecordDeleteResponse"
+  "/app/messageLog/list_messageLog_user":
+    post:
+      operationId: "listMessageLogUser"
+      summary: "List user messages"
+      description: "Paged messages, optionally by type."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                messageType:
+                  type: "string"
+                  description: "optional message category"
+                pageNum:
+                  type: "integer"
+                pageSize:
+                  type: "integer"
+                timeZone:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageLogListResponse"
+  "/app/messageLog/messageLog_user_details":
+    post:
+      operationId: "getMessageLogUserDetails"
+      summary: "Get message detail"
+      description: "Detail of a message (marks it read, presumably)."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageLogDetailResponse"
+  "/app/messageLog/topic_messageLog_read_flag":
+    post:
+      operationId: "getMessageHomeReadFlag"
+      summary: "Get unread flags per category"
+      description: "Form-urlencoded POST with empty body."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/x-www-form-urlencoded":
+            schema:
+              type: "object"
+              properties: {}
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageReadFlagResponse"
+  "/app/messageLog/messageLog_read_all":
+    post:
+      operationId: "markAllMessagesRead"
+      summary: "Mark all messages read"
+      description: "Marks all messages (optionally of one type) as read."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                messageType:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageReadAllResponse"
+  "/app/messageLog/list_pop_up":
+    post:
+      operationId: "listMessagePopup"
+      summary: "List pop-up windows"
+      description: "Pop-up announcements with action buttons (page 1)."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                pageNum:
+                  type: "integer"
+                pageSize:
+                  type: "integer"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessagePopupListResponse"
+  "/app/messageNotifyCondition/get_detail/{userId}":
+    post:
+      operationId: "getMessageNotifyConditionDetail"
+      summary: "Get notification settings"
+      description: "POST with empty JSON body; path segment is current user UID."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      parameters:
+        - name: "userId"
+          in: "path"
+          required: true
+          description: "current user id"
+          schema:
+            type: "string"
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties: {}
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageNotifyConditionResponse"
+  "/app/messageNotifyCondition/update_messageNotifyCondition":
+    post:
+      operationId: "updateMessageNotifyCondition"
+      summary: "Update notification settings"
+      description: "Saves notification switches/thresholds; returns the updated record. *Enable flags are sent as integers 1/0."
+      tags:
+        - "Message"
+      security:
+        - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          "application/json":
+            schema:
+              type: "object"
+              properties:
+                id:
+                  type: "string"
+                userId:
+                  type: "string"
+                faultEnable:
+                  type: "integer"
+                warnEnable:
+                  type: "integer"
+                lineStatusEnable:
+                  type: "integer"
+                socHighEnable1:
+                  type: "integer"
+                socHighEnable2:
+                  type: "integer"
+                socHighEnable3:
+                  type: "integer"
+                socHighValue1:
+                  type: "string"
+                socHighValue2:
+                  type: "string"
+                socHighValue3:
+                  type: "string"
+                socLowEnable1:
+                  type: "integer"
+                socLowEnable2:
+                  type: "integer"
+                socLowEnable3:
+                  type: "integer"
+                socLowValue1:
+                  type: "string"
+                socLowValue2:
+                  type: "string"
+                socLowValue3:
+                  type: "string"
+      responses:
+        "200":
+          description: "Envelope with code/message/data"
+          content:
+            "application/json":
+              schema:
+                "$ref": "#/components/schemas/MessageNotifyConditionUpdateResponse"
+components:
+  schemas:
+    FeedbackFile:
+      type: "object"
+      properties:
+        fedBackId:
+          type: "string"
+        fileId:
+          type: "string"
+        fileName:
+          type: "string"
+        fileType:
+          type: "string"
+        fileUploadStatus:
+          type: "string"
+        fileUrl:
+          type: "string"
+        id:
+          type: "string"
+    FeedbackFileBrief:
+      type: "object"
+      properties:
+        fedBackId:
+          type: "string"
+        fileName:
+          type: "string"
+        fileType:
+          type: "string"
+        fileUploadStatus:
+          type: "integer"
+        fileUrl:
+          type: "string"
+        id:
+          type: "string"
+    FeedbackUpdateRecord:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          description: "epoch ms"
+          format: "int64"
+        field:
+          type: "string"
+        log:
+          type: "string"
+    FeedbackHandleLog:
+      type: "object"
+      properties:
+        blue:
+          type: "array"
+          items:
+            type: "string"
+        red:
+          type: "array"
+          items:
+            type: "string"
+        yellow:
+          type: "array"
+          items:
+            type: "string"
+        createTime:
+          type: "integer"
+          description: "epoch ms"
+          format: "int64"
+        flowNodesType:
+          type: "integer"
+        handleId:
+          type: "string"
+        handleLog:
+          type: "string"
+        handleStatus:
+          type: "integer"
+        log:
+          type: "string"
+        notes:
+          type: "string"
+        notesLog:
+          type: "string"
+        status:
+          type: "integer"
+        type:
+          type: "integer"
+      description: "Timeline/log item; blue/red/yellow are colored text fragments for UI highlighting."
+    ComplaintFileResponse:
+      type: "object"
+      properties:
+        fileId:
+          type: "string"
+        fileName:
+          type: "string"
+        fileType:
+          type: "string"
+        fileUrl:
+          type: "string"
+        fileuploadStatus:
+          type: "integer"
+        type:
+          type: "string"
+        videoImgUrl:
+          type: "string"
+    ComplaintOrderFile:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        dataScope:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataScopeUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        delFlag:
+          type: "boolean"
+        fileId:
+          type: "string"
+        fileType:
+          type: "integer"
+        fileUrl:
+          type: "string"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        orderId:
+          type: "string"
+        otherUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+    ComplaintHandle:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        customerComplaintFiles:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintOrderFile"
+        dataScope:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataScopeUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        delFlag:
+          type: "boolean"
+        deviceSn:
+          type: "string"
+        executorUserId:
+          type: "string"
+        executorUserName:
+          type: "string"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        operateUserName:
+          type: "string"
+        orderId:
+          type: "string"
+        otherUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        reviewerUserId:
+          type: "string"
+        reviewerUserName:
+          type: "string"
+        solutionNotes:
+          type: "string"
+        solutionType:
+          type: "integer"
+          description: "solution type code (client sends the same field in handleOrder); meaning of values not determined"
+        status:
+          type: "integer"
+    ComplaintProductType:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        dataScope:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataScopeUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        delFlag:
+          type: "boolean"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        orderId:
+          type: "string"
+        otherUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        type:
+          type: "integer"
+          description: "product type id"
+    ComplaintUserRoles:
+      type: "object"
+      properties:
+        assignOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        deleteHandleOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        deleteOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        finishOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        handleOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        reviewOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+        updateOrder:
+          type: "string"
+          description: "permission flag string (truthy value enables the action in the UI)"
+      description: "Per-order permission flags for the current user."
+    ComplaintOrder:
+      type: "object"
+      properties:
+        contactAddress:
+          type: "string"
+        countryName:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        createUserName:
+          type: "string"
+        customerComplaintFiles:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintFileResponse"
+        customerComplaintHandles:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintHandle"
+        customerComplaintOperations:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackHandleLog"
+        customerComplaintReplys:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        customerComplaintResponsibleRecords:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        customerComplaintUpdates:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackUpdateRecord"
+        customerContact:
+          type: "string"
+        delFlag:
+          type: "integer"
+        deviceSn:
+          type: "string"
+        finishTime:
+          type: "integer"
+          format: "int64"
+        flowNodesType:
+          type: "integer"
+          description: "Current flow node / handling tier: 1 overseas customer service, 2 domestic customer service, 3 engineer, 4 R&D"
+        flowNodesTypeStr:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        omProductModels:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        omProductTypes:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintProductType"
+        priority:
+          type: "integer"
+          description: "priority level (numeric; labels not determined)"
+        priorityStr:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        productModel:
+          type: "string"
+        productModelDeviceSns:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        productType:
+          type: "string"
+        questionDesc:
+          type: "string"
+        rejectReason:
+          type: "string"
+        responsibleTime:
+          type: "string"
+        responsibleUserId:
+          type: "string"
+        responsibleUserName:
+          type: "string"
+        responsibleUserNameHistory:
+          type: "string"
+        reviewStatus:
+          type: "string"
+          description: "review status code (sent as reviewStatus in reviewOrder)"
+        reviewerUserId:
+          type: "string"
+        reviewerUserName:
+          type: "string"
+        status:
+          type: "integer"
+          description: "1 = in progress (follow-up), 2 = closed (case ended)"
+        statusStr:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        userRoles:
+          "$ref": "#/components/schemas/ComplaintUserRoles"
+        workOrder:
+          type: "string"
+          description: "work order number"
+    ComplaintOrderPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "string"
+        pageSize:
+          type: "string"
+        total:
+          type: "string"
+        totalPage:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintOrder"
+        data:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+    ComplaintReply:
+      type: "object"
+      properties:
+        content:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        customerComplaintFiles:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintFileResponse"
+        delFlag:
+          type: "integer"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        orderId:
+          type: "string"
+        parentId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        replyUserName:
+          type: "string"
+        type:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+    ComplaintReplyPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "string"
+        pageSize:
+          type: "string"
+        total:
+          type: "string"
+        totalPage:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintReply"
+        data:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+    ComplaintDeviceModel:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataScope:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataScopeUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        delFlag:
+          type: "boolean"
+        deviceModel:
+          type: "string"
+        id:
+          type: "string"
+        modifyTime:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        modifyUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        otherUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+    ComplaintModelSn:
+      type: "object"
+      properties:
+        deviceModel:
+          type: "string"
+        deviceSn:
+          type: "string"
+    ComplaintModelSnPage:
+      type: "object"
+      properties:
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/ComplaintModelSn"
+    FeedbackDetail:
+      type: "object"
+      properties:
+        assignUserId:
+          type: "string"
+        cityId:
+          type: "string"
+        cityName:
+          type: "string"
+        countryId:
+          type: "string"
+        countryName:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        description:
+          type: "string"
+        deviceAddress:
+          type: "string"
+        deviceId:
+          type: "string"
+        deviceSn:
+          type: "string"
+        deviceType:
+          type: "string"
+          description: "device type code, e.g. \"CO\" = collector"
+        displayAcceptanceButton:
+          type: "integer"
+          description: "1 = show acceptance (verify) button"
+        displayAssignButton:
+          type: "integer"
+          description: "1 = show assign button"
+        email:
+          type: "string"
+        evaluateEfficient:
+          type: "string"
+        evaluateQuality:
+          type: "string"
+        evaluateRespond:
+          type: "string"
+        evaluateTotal:
+          type: "string"
+        fedBackType:
+          type: "integer"
+          description: "feedback type (list request filter fedBackType uses the same field)"
+        feedBackFile:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackFile"
+        feedBackUpdateRecordVOS:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackUpdateRecord"
+        forward:
+          type: "string"
+        handleLogVOS:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackHandleLog"
+        handleStatus:
+          type: "integer"
+          description: "0 pending, 1 in progress, 2 to be verified, 3 to be evaluated, 4 finished"
+        id:
+          type: "string"
+        modifyTime:
+          type: "string"
+        notes:
+          type: "string"
+        phone:
+          type: "string"
+        plantId:
+          type: "string"
+        plantName:
+          type: "string"
+        provinceId:
+          type: "string"
+        provinceName:
+          type: "string"
+        readFlag:
+          type: "string"
+          description: "\"1\" = read"
+        responsibleAvatarUrl:
+          type: "string"
+        responsibleUserId:
+          type: "string"
+        responsibleUserName:
+          type: "string"
+        responsibleUserPhone:
+          type: "string"
+        responsibleUserPhoneZone:
+          type: "string"
+        subject:
+          type: "string"
+        typeCode:
+          type: "string"
+        userName:
+          type: "string"
+    FeedbackHistoryItem:
+      type: "object"
+      properties:
+        abbreviationType:
+          type: "integer"
+        assignUserId:
+          type: "string"
+        assignUserName:
+          type: "string"
+        cityName:
+          type: "string"
+        countryName:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        description:
+          type: "string"
+        deviceAddress:
+          type: "string"
+        deviceSn:
+          type: "string"
+        email:
+          type: "string"
+        emailSendStatus:
+          type: "integer"
+        fedBackFiles:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackFileBrief"
+        fedBackType:
+          type: "string"
+        filePercent:
+          type: "integer"
+        fileUploadStatus:
+          type: "integer"
+        handleDescription:
+          type: "string"
+        handleStatus:
+          type: "string"
+          description: "0 pending, 1 in progress, 2 to be verified, 3 to be evaluated, 4 finished"
+        id:
+          type: "string"
+        modifyTime:
+          type: "string"
+        phone:
+          type: "string"
+        provinceName:
+          type: "string"
+        readFlag:
+          type: "string"
+        subject:
+          type: "string"
+        systemReadCount:
+          type: "integer"
+        terminalReadCount:
+          type: "integer"
+        userName:
+          type: "string"
+    FeedbackHistoryPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "integer"
+        data:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackHistoryItem"
+        pageSize:
+          type: "integer"
+        total:
+          type: "integer"
+        totalPage:
+          type: "integer"
+    FeedbackMessage:
+      type: "object"
+      properties:
+        content:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        createUserName:
+          type: "string"
+        delFlag:
+          type: "string"
+        fedBackId:
+          type: "string"
+        handleStatus:
+          type: "integer"
+        id:
+          type: "string"
+        modifyTime:
+          type: "string"
+        modifyUserId:
+          type: "string"
+        nowMessageType:
+          type: "string"
+        orgId:
+          type: "string"
+        type:
+          type: "string"
+          description: "message type (text/file type code)"
+    FeedbackMessagePage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "integer"
+        data:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackMessage"
+        pageSize:
+          type: "integer"
+        total:
+          type: "integer"
+        totalPage:
+          type: "integer"
+    FeedbackHandleRecord:
+      type: "object"
+      properties:
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        delFlag:
+          type: "integer"
+        feedBackId:
+          type: "string"
+        file:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackFile"
+        handleDesc:
+          type: "string"
+        handleName:
+          type: "string"
+        handleStatus:
+          type: "string"
+        handleType:
+          type: "string"
+        id:
+          type: "string"
+        maintenanceTime:
+          type: "integer"
+          format: "int64"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        modifyUserId:
+          type: "string"
+        name:
+          type: "string"
+        newDeviceSn:
+          type: "string"
+        number:
+          type: "integer"
+        phone:
+          type: "string"
+        phoneZone:
+          type: "string"
+        timePeriod:
+          type: "string"
+    FeedbackHandleRecordPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "string"
+        pageSize:
+          type: "string"
+        total:
+          type: "string"
+        totalPage:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackHandleRecord"
+    FeedbackPaySwitch:
+      type: "object"
+      properties:
+        disPlaySwitch:
+          type: "string"
+    FeedbackListItem:
+      type: "object"
+      properties:
+        assignUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        assignUserName:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        cityName:
+          type: "string"
+        countryName:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        createUserId:
+          type: "string"
+        description:
+          type: "string"
+        deviceAddress:
+          type: "string"
+        deviceSn:
+          type: "string"
+        disPlaySwitch:
+          type: "string"
+        evaluateEfficient:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        evaluateQuality:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        evaluateRespond:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        evaluateTotal:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        feedBackType:
+          type: "integer"
+        handleDescription:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        handleStatus:
+          type: "integer"
+          description: "0 pending, 1 in progress, 2 to be verified, 3 to be evaluated, 4 finished"
+        id:
+          type: "string"
+        modifyTime:
+          type: "integer"
+          format: "int64"
+        notes:
+          type: "string"
+        provinceName:
+          type: "string"
+        readFlag:
+          type: "string"
+        realName:
+          type: "string"
+        responsibleAvatarUrl:
+          type: "string"
+        responsibleUserId:
+          type: "string"
+        responsibleUserName:
+          type: "string"
+        responsibleUserPhone:
+          type: "string"
+        responsibleUserPhoneZone:
+          type: "string"
+        status:
+          type: "integer"
+        subject:
+          type: "string"
+        systemReadCount:
+          type: "integer"
+        terminalReadCount:
+          type: "integer"
+        timeoutStatus:
+          type: "string"
+    FeedbackListPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "string"
+        pageSize:
+          type: "string"
+        total:
+          type: "string"
+        totalPage:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/FeedbackListItem"
+        data:
+          "$ref": "#/components/schemas/FeedbackPaySwitch"
+    PlantAddress:
+      type: "object"
+      properties:
+        Stringitude:
+          type: "string"
+          description: "Probably \"longitude\" mangled by a global rename in the client entity; wire name not confirmed"
+        address:
+          type: "string"
+        avgPrice:
+          type: "string"
+        cityId:
+          type: "string"
+        cityName:
+          type: "string"
+        co2Less:
+          type: "string"
+        countryId:
+          type: "string"
+        countryName:
+          type: "string"
+        createTime:
+          type: "string"
+        createUserId:
+          type: "string"
+        currency:
+          type: "string"
+        currentPower:
+          type: "string"
+        currentPowerUnit:
+          type: "string"
+        delFlag:
+          type: "string"
+        electricityPrice:
+          type: "string"
+        genPrice:
+          type: "string"
+        id:
+          type: "string"
+        installDate:
+          type: "string"
+        installDateStr:
+          type: "string"
+        installer:
+          type: "string"
+        isCollected:
+          type: "string"
+        latitude:
+          type: "string"
+        modifyTime:
+          type: "string"
+        modifyUserId:
+          type: "string"
+        ownerName:
+          type: "string"
+        peakPrice:
+          type: "string"
+        pictures:
+          type: "string"
+        plantAddress:
+          type: "string"
+        plantId:
+          type: "string"
+        plantName:
+          type: "string"
+        plantType:
+          type: "string"
+        provinceId:
+          type: "string"
+        provinceName:
+          type: "string"
+        pvPower:
+          type: "string"
+        pvPowerUnit:
+          type: "string"
+        reduceDeforestation:
+          type: "string"
+        spareCoal:
+          type: "string"
+        status:
+          type: "string"
+        timeZone:
+          type: "string"
+        todayEnergy:
+          type: "string"
+        todayEnergyUnit:
+          type: "string"
+        totalEnergy:
+          type: "string"
+        totalEnergyUnit:
+          type: "string"
+        totalPower:
+          type: "string"
+        troughPrice:
+          type: "string"
+      description: "Plant record returned by getPlantAddress; all fields strings."
+    RepairRecord:
+      type: "object"
+      properties:
+        chargeAmount:
+          type: "string"
+        city:
+          type: "string"
+        city2:
+          type: "string"
+        city2Id:
+          type: "string"
+        cityId:
+          type: "string"
+        componentOrTypeNo:
+          type: "string"
+        countryId:
+          type: "string"
+        countryName:
+          type: "string"
+        createUserId:
+          type: "string"
+        customerName:
+          type: "string"
+        customerPhone:
+          type: "string"
+        damagePcb:
+          type: "string"
+        damagedComponent:
+          type: "string"
+        dateTime:
+          type: "string"
+        deviceModel:
+          type: "string"
+        deviceSn:
+          type: "string"
+        faultBoard:
+          type: "string"
+        faultDesc:
+          type: "string"
+        id:
+          type: "string"
+        modifyUserId:
+          type: "string"
+        mosIgbtModel:
+          type: "string"
+        newNo:
+          type: "string"
+        notes:
+          type: "string"
+        productModel:
+          type: "string"
+        remark:
+          type: "string"
+        repairEngineer:
+          type: "string"
+        repairNo:
+          type: "string"
+        solution:
+          type: "string"
+        submitName:
+          type: "string"
+        type:
+          type: "string"
+        typeShowName:
+          type: "string"
+        warrantyPeriod:
+          type: "string"
+        withoutWarranty:
+          type: "string"
+        createTime:
+          type: "integer"
+          description: "epoch ms"
+          format: "int64"
+        modifyTime:
+          type: "integer"
+          description: "epoch ms"
+          format: "int64"
+        submitDateTime:
+          type: "integer"
+          description: "epoch ms"
+          format: "int64"
+        delFlag:
+          type: "integer"
+      description: "Shared by repair records and complaint (fault) records (OperationListEntity); repair-only fields are blank on complaint records and vice versa."
+    RepairRecordPage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "string"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/RepairRecord"
+        totalPage:
+          type: "string"
+    MessageNoticeCondition:
+      type: "object"
+      properties:
+        createTime:
+          type: "string"
+        createUserId:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        delFlag:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        id:
+          type: "string"
+        modifyTime:
+          type: "string"
+        modifyUserId:
+          type: "string"
+        userId:
+          type: "string"
+        faultEnable:
+          type: "string"
+          description: "\"1\" fault notification on, \"0\" off"
+        warnEnable:
+          type: "string"
+          description: "\"1\"/\"0\" warning notification"
+        lineStatusEnable:
+          type: "string"
+          description: "\"1\"/\"0\" device online/offline notification"
+        socHighEnable1:
+          type: "string"
+        socHighEnable2:
+          type: "string"
+        socHighEnable3:
+          type: "string"
+        socHighValue1:
+          type: "string"
+        socHighValue2:
+          type: "string"
+        socHighValue3:
+          type: "string"
+        socLowEnable1:
+          type: "string"
+        socLowEnable2:
+          type: "string"
+        socLowEnable3:
+          type: "string"
+        socLowValue1:
+          type: "string"
+        socLowValue2:
+          type: "string"
+        socLowValue3:
+          type: "string"
+        supportDeviceModels:
+          type: "array"
+          items:
+            type: "string"
+    MessageItem:
+      type: "object"
+      properties:
+        buttonList:
+          type: "array"
+          items:
+            description: "Untyped (declared as Object in the client; shape unknown)"
+        content:
+          type: "string"
+        createTime:
+          type: "integer"
+          format: "int64"
+        deviceSn:
+          type: "string"
+        deviceType:
+          type: "string"
+        id:
+          type: "string"
+        messageType:
+          type: "string"
+        modifyTime:
+          type: "string"
+        readFlag:
+          type: "integer"
+          description: "0 unread, 1 read"
+        subtitle:
+          type: "string"
+        templateCode:
+          type: "string"
+        templateTopic:
+          type: "string"
+        text:
+          type: "string"
+        title:
+          type: "string"
+        type:
+          type: "integer"
+    MessagePage:
+      type: "object"
+      properties:
+        currentPage:
+          type: "integer"
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/MessageItem"
+        totalPage:
+          type: "integer"
+    MessageReadFlags:
+      type: "object"
+      properties:
+        deviceNoticeReadFlag:
+          type: "string"
+          description: "read flag (\"0\" = unread items exist is assumed; values not verified)"
+        otherNoticeReadFlag:
+          type: "string"
+          description: "read flag (\"0\" = unread items exist is assumed; values not verified)"
+        pendNoticeReadFlag:
+          type: "string"
+          description: "read flag (\"0\" = unread items exist is assumed; values not verified)"
+        systemNoticeReadFlag:
+          type: "string"
+          description: "read flag (\"0\" = unread items exist is assumed; values not verified)"
+    MessagePopupButton:
+      type: "object"
+      properties:
+        androidAppPage:
+          type: "string"
+        code:
+          type: "integer"
+        iosAppPage:
+          type: "string"
+        name:
+          type: "string"
+        params:
+          description: "Untyped (declared as Object in the client; shape unknown)"
+        tip:
+          type: "string"
+        type:
+          type: "integer"
+        url:
+          type: "string"
+    MessagePopup:
+      type: "object"
+      properties:
+        buttonList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/MessagePopupButton"
+        popupUrl:
+          type: "string"
+    MessagePopupPage:
+      type: "object"
+      properties:
+        dataList:
+          type: "array"
+          items:
+            "$ref": "#/components/schemas/MessagePopup"
+    ComplaintOrderListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/ComplaintOrderPage"
+    ComplaintOrderDetailResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/ComplaintOrder"
+    ComplaintReplyListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/ComplaintReplyPage"
+    ComplaintOrderSaveResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintOrderUpdateResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintOrderDeleteResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintHandleDeleteResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintOrderAssignResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintOrderHandleResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplaintOrderReplyResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/ComplaintReply"
+    ComplaintOrderReviewResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    DeviceSnByModelResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/ComplaintModelSnPage"
+    ProductModelListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              type: "array"
+              items:
+                "$ref": "#/components/schemas/ComplaintDeviceModel"
+    FeedbackDetailResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackDetail"
+    FeedbackSubmitDeviceResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackUpdateResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackSubmitSystemResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackHistoryListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackHistoryPage"
+    FeedbackRecordListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackMessagePage"
+    FeedbackRecordCreateResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackMessage"
+    FeedbackExaminerResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackAssignResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackEvaluateResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackHandleListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackHandleRecordPage"
+    FeedbackHandleSaveResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    FeedbackTicketListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/FeedbackListPage"
+    FeedbackPlantAddressResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/PlantAddress"
+    ComplainRecordListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/RepairRecordPage"
+    ComplainRecordSaveResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    ComplainRecordDeleteResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    RepairRecordListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/RepairRecordPage"
+    RepairRecordSaveResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    RepairRecordDeleteResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    MessageLogListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessagePage"
+    MessageLogDetailResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessageItem"
+    MessageReadFlagResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessageReadFlags"
+    MessageReadAllResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              description: "No meaningful payload (client treats data as Object)"
+    MessagePopupListResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessagePopupPage"
+    MessageNotifyConditionResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessageNoticeCondition"
+    MessageNotifyConditionUpdateResponse:
+      allOf:
+        - "$ref": "#/components/schemas/ApiEnvelope"
+        - type: "object"
+          properties:
+            data:
+              "$ref": "#/components/schemas/MessageNoticeCondition"

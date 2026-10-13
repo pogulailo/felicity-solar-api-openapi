@@ -1,0 +1,3546 @@
+paths:
+  /verification/captcha/get:
+    post:
+      operationId: captchaGet
+      summary: Get block-puzzle captcha
+      description: Fetches a slider ("blockPuzzle") captcha image pair. The returned repData.token and repData.secretKey are
+        used by captchaCheck.
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptchaGetRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptchaGetResponse'
+      security: []
+  /verification/captcha/check:
+    post:
+      operationId: captchaCheck
+      summary: Verify captcha slider position
+      description: Verifies the slider. pointJson = AES/ECB/PKCS7Padding(Base64, android Base64.DEFAULT) of Gson JSON {"x":<sliderXMoved>,"y":5.0}
+        using key = secretKey from captcha/get. The "captchaVerification" later passed to verification/code is built by the
+        UI (typically AES(token + "---" + pointJson); not verified here).
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CaptchaCheckRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaptchaCheckResponse'
+      security: []
+  /verification/code:
+    post:
+      operationId: sendVerificationCode
+      summary: Send SMS or e-mail verification code
+      description: 'Sends a code to phone (target=phone) or email (target=email) after captcha. useType meaning: phone: "1"=register,
+        "2"=reset password, "3", "1003"; email: "1001", "1002"=edit email, "3", "1003". (MsgCodeView codeType mapping).'
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendVerificationCodeRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendVerificationCodeResponse'
+      security: []
+  /verification/get_email_code:
+    post:
+      operationId: getEmailCode
+      summary: Send e-mail code (legacy form variant)
+      description: Form-encoded variant of sending an e-mail code (MsgCodeDao.y). Appears unused by current MsgCodeView (which
+        uses /verification/code); status not confirmed.
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GetEmailCodeRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEmailCodeResponse'
+      security: []
+  /verification/verificationNo:
+    post:
+      operationId: verifySmsCode
+      summary: Check SMS/verification code
+      description: Checks a code. lable = phone number/email the code was sent to, verification = code entered. apiVersion
+        = app VERSION_NAME.
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifySmsCodeRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifySmsCodeResponse'
+      security: []
+  /verification/verification:
+    post:
+      operationId: verifyEmailCode
+      summary: Check e-mail verification code with purpose
+      description: Like verificationNo but with useType.
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailCodeRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyEmailCodeResponse'
+      security: []
+  /verification/isPhoneExistStr:
+    post:
+      operationId: isPhoneExist
+      summary: Check whether phone number is registered
+      description: Returns a string result (semantics not resolved, presumably "true"/"false" or message).
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IsPhoneExistRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsPhoneExistResponse'
+      security: []
+  /verification/isEmailExistStr:
+    post:
+      operationId: isEmailExist
+      summary: Check whether e-mail is registered
+      description: Returns a string result.
+      tags:
+      - Verification
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/IsEmailExistRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsEmailExistResponse'
+      security: []
+  /app/base/userlogin:
+    post:
+      operationId: userLogin
+      summary: Log in
+      description: 'Login with account (phone/email/username) and password. password is RSA-encrypted: RSA/ECB/PKCS1Padding
+        with the app-embedded 2048-bit public key, 117-byte blocks, Base64 (RSAUtils.encrypt). Response contains the token
+        used as Authorization header. Callers: gc/v0 (login view model).'
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginResponse'
+      security: []
+  /app/base/demoUserlogin:
+    post:
+      operationId: demoUserLogin
+      summary: Log in as demo user
+      description: Empty JSON body; returns a demo account session.
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DemoUserLoginRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DemoUserLoginResponse'
+      security: []
+  /app/base/userLogout:
+    post:
+      operationId: userLogout
+      summary: Log out
+      description: Form post. Unregisters push registration.
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserLogoutRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogoutResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/logOffUser:
+    post:
+      operationId: logOffUser
+      summary: Delete / deactivate (log off) the account
+      description: Account cancellation. lable/verification are the account and code (from verificationNo); id = current user
+        id.
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogOffUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogOffUserResponse'
+      security:
+      - ApiToken: []
+  /app/base/switchUsers:
+    post:
+      operationId: switchUsers
+      summary: Switch to another user (agent/installer view)
+      description: keyword and switchUserId are RSA encrypted (RSA/ECB/PKCS1Padding with the app-embedded 2048-bit public
+        key, 117-byte blocks, Base64 (RSAUtils.encrypt).). Returns a new UserEntity session.
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchUsersRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwitchUsersResponse'
+      security:
+      - ApiToken: []
+  /app/base/register:
+    post:
+      operationId: register
+      summary: Register new account
+      description: 'userType: 3 = company (companyName and realName both set from name); other values set only realName (installer/distributor/end-user
+        values not resolved). password/passwordConfirm are the same RSA+Base64 value. RSA/ECB/PKCS1Padding with the app-embedded
+        2048-bit public key, 117-byte blocks, Base64 (RSAUtils.encrypt).'
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+      security: []
+  /app/base/forgetPassword:
+    post:
+      operationId: forgetPassword
+      summary: Reset forgotten password
+      description: Password RSA encrypted. RSA/ECB/PKCS1Padding with the app-embedded 2048-bit public key, 117-byte blocks,
+        Base64 (RSAUtils.encrypt).
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgetPasswordRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgetPasswordResponse'
+      security: []
+  /app/adminuser/modifyPassword:
+    post:
+      operationId: modifyPassword
+      summary: Change password
+      description: Passwords RSA encrypted. RSA/ECB/PKCS1Padding with the app-embedded 2048-bit public key, 117-byte blocks,
+        Base64 (RSAUtils.encrypt).
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModifyPasswordRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModifyPasswordResponse'
+      security:
+      - ApiToken: []
+  /app/base/nodeList:
+    get:
+      operationId: nodeList
+      summary: List server nodes (regions)
+      description: Node list used to choose data-center; Node header uses nodeCode.
+      tags:
+      - Auth
+      parameters:
+      - name: countryId
+        in: query
+        required: false
+        description: optional country id
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeListResponse'
+      security:
+      - ApiToken: []
+  /app/base/languageList:
+    post:
+      operationId: languageList
+      summary: List supported languages
+      description: Form post with apiVersion="2.0".
+      tags:
+      - Auth
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LanguageListRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LanguageListResponse'
+      security:
+      - ApiToken: []
+  /app/base/helpCenter:
+    get:
+      operationId: helpCenter
+      summary: Help center / contact info
+      description: Company contact info.
+      tags:
+      - Auth
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelpCenterResponse'
+      security:
+      - ApiToken: []
+  /appVersion/appVersionCheckUpdate:
+    get:
+      operationId: appVersionCheckUpdate
+      summary: Check app update
+      description: osType=0 (Android).
+      tags:
+      - Auth
+      parameters:
+      - name: osType
+        in: query
+        required: true
+        description: always "0"
+        schema:
+          type: string
+      - name: version
+        in: query
+        required: true
+        description: installed app version name
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppVersionCheckUpdateResponse'
+      security:
+      - ApiToken: []
+  /app/base/check_product_realtime_package_update:
+    post:
+      operationId: checkProductRealtimePackageUpdate
+      summary: Check realtime data package update
+      description: App sends id "0" placeholders, receives package URLs.
+      tags:
+      - Package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckProductRealtimePackageUpdateRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckProductRealtimePackageUpdateResponse'
+      security:
+      - ApiToken: []
+  /app/base/check_product_setting_package_update:
+    post:
+      operationId: checkProductSettingPackageUpdate
+      summary: Check remote parameter setting package update
+      description: productPackages items fixed to productType ACC, IVEM, IVGM.
+      tags:
+      - Package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckProductSettingPackageUpdateRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckProductSettingPackageUpdateResponse'
+      security:
+      - ApiToken: []
+  /app/base/check_warning_package_update:
+    post:
+      operationId: checkWarningPackageUpdate
+      summary: Check device fault/alarm package update
+      description: id=0 (number).
+      tags:
+      - Package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckWarningPackageUpdateRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckWarningPackageUpdateResponse'
+      security:
+      - ApiToken: []
+  /app/base/check_product_package_update:
+    post:
+      operationId: checkProductPackageUpdate
+      summary: Check product package update
+      description: id="0" (string).
+      tags:
+      - Package
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckProductPackageUpdateRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckProductPackageUpdateResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/userInfo/{userId}:
+    get:
+      operationId: endUserInfo
+      summary: Get user detail
+      description: Path template /app/endUser/userInfo/%s with the current user id (MyPreference.getUID()).
+      tags:
+      - User
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        description: user id
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndUserInfoResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/editUser:
+    post:
+      operationId: editUser
+      summary: Edit own profile
+      description: 'Used for head image or contact update; id = current user id. Two call variants: (headImg,email,phone)
+        and (email,phone,realName).'
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditUserResponse'
+      security:
+      - ApiToken: []
+  /app/base/updatePhone:
+    post:
+      operationId: updatePhone
+      summary: Change own phone number
+      description: Requires SMS code (verificationCode).
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhoneRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePhoneResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/editEmail:
+    post:
+      operationId: editEmail
+      summary: Change own e-mail
+      description: useType fixed "1002".
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditEmailRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditEmailResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/update_user_organ:
+    post:
+      operationId: updateUserOrgan
+      summary: Bind installer code to user
+      description: Sets installer organization via installerCode.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserOrganRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUserOrganResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/install_code_info:
+    post:
+      operationId: installCodeInfo
+      summary: Get installer code info
+      description: Form post with no parameters.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InstallCodeInfoRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstallCodeInfoResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/user/role:
+    get:
+      operationId: currentUserRole
+      summary: Get current user roles
+      description: Returns string (no class decode).
+      tags:
+      - User
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentUserRoleResponse'
+      security:
+      - ApiToken: []
+  /app/menu/list_menu:
+    post:
+      operationId: listMenu
+      summary: Get menu resources
+      description: Raw (untyped) data returned as string/JSON text.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListMenuRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListMenuResponse'
+      security:
+      - ApiToken: []
+  /app/bottomNavigationBar/mine/notify_count:
+    post:
+      operationId: mineNotifyCount
+      summary: Message badge counts
+      description: orgCode from prefs USER_ORG_CODE.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MineNotifyCountRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MineNotifyCountResponse'
+      security:
+      - ApiToken: []
+  /app/testPaper/update_test_paper_user_status:
+    post:
+      operationId: updateTestPaperUserStatus
+      summary: Update questionnaire (test paper) status
+      description: 'testPaperUserState: 1 = true, 2 = false.'
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTestPaperUserStatusRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTestPaperUserStatusResponse'
+      security:
+      - ApiToken: []
+  /app/userSystemSetting/get_user_system_setting:
+    post:
+      operationId: getUserSystemSetting
+      summary: Get user system settings (temperature unit)
+      description: pageNum=1, pageSize=page-size constant.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUserSystemSettingRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserSystemSettingResponse'
+      security:
+      - ApiToken: []
+  /app/userSystemSetting/save_userSystemSetting:
+    post:
+      operationId: saveUserSystemSetting
+      summary: Save user system settings
+      description: Returns updated setting.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveUserSystemSettingRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveUserSystemSettingResponse'
+      security:
+      - ApiToken: []
+  /app/userOpinion/save_userOpinion:
+    post:
+      operationId: saveUserOpinion
+      summary: Submit user feedback
+      description: fileUrl list sent as opinionImgUrls.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveUserOpinionRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveUserOpinionResponse'
+      security:
+      - ApiToken: []
+  /app/carousel/list_carousel_not_page:
+    post:
+      operationId: listCarousel
+      summary: List home banners
+      description: Empty JSON body.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListCarouselRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCarouselResponse'
+      security:
+      - ApiToken: []
+  /app/chartTemplate/save_chartTemplate:
+    post:
+      operationId: saveChartTemplate
+      summary: Save chart field template
+      description: Saves user-chosen chart fields.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveChartTemplateRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveChartTemplateResponse'
+      security:
+      - ApiToken: []
+  /aliyun/file/other_upload:
+    post:
+      operationId: otherUpload
+      summary: Upload file(s)
+      description: Multipart, part name "file" (repeated for multiple), 120s timeout.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: array
+                  description: Repeat the part name `file` once per uploaded file.
+                  items:
+                    type: string
+                    format: binary
+              required:
+              - file
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtherUploadResponse'
+      security:
+      - ApiToken: []
+  /aliyun/file/delete_file_batch_id:
+    post:
+      operationId: deleteFileBatch
+      summary: Delete uploaded files by id
+      description: ids as given (comma-separated assumed).
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteFileBatchRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteFileBatchResponse'
+      security:
+      - ApiToken: []
+  /app/dropdownOption/list_product_class:
+    post:
+      operationId: listProductClass
+      summary: List product classes
+      description: useType=0, typeArray=[0], optional primaryId.
+      tags:
+      - Dropdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListProductClassRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProductClassResponse'
+      security:
+      - ApiToken: []
+  /app/dropdownOption/list_dropdownOption:
+    post:
+      operationId: listDropdownOption
+      summary: List dropdown options (paged)
+      description: 'Variants: {type,group,pageNum,pageSize}, {type,pageNum,pageSize:100}, {parentId("0" default),type:0,...}.'
+      tags:
+      - Dropdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListDropdownOptionRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDropdownOptionResponse'
+      security:
+      - ApiToken: []
+  /app/dropdownOption/list_dropdownOption_all:
+    post:
+      operationId: listDropdownOptionAll
+      summary: List dropdown options by type array
+      description: typeArray holds one type.
+      tags:
+      - Dropdown
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListDropdownOptionAllRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDropdownOptionAllResponse'
+      security:
+      - ApiToken: []
+  /app/video/list_video:
+    post:
+      operationId: listVideo
+      summary: List help videos
+      description: enableStatus fixed 1.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListVideoRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListVideoResponse'
+      security:
+      - ApiToken: []
+  /app/dictionary/dictionary_check:
+    post:
+      operationId: dictionaryCheck
+      summary: Dictionary lookup
+      description: code fixed "127".
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DictionaryCheckRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DictionaryCheckResponse'
+      security:
+      - ApiToken: []
+  /app/homeCard/list_homeCard_device_model:
+    post:
+      operationId: listHomeCardDeviceModel
+      summary: List home card layout options for plant/device
+      description: Either plantId or deviceSn.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListHomeCardDeviceModelRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListHomeCardDeviceModelResponse'
+      security:
+      - ApiToken: []
+  /app/userHomeCard/list_userHomeCard:
+    post:
+      operationId: listUserHomeCard
+      summary: List user home cards
+      description: scope=0.
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListUserHomeCardRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUserHomeCardResponse'
+      security:
+      - ApiToken: []
+  /app/userHomeCard/save_userHomeCard:
+    post:
+      operationId: saveUserHomeCard
+      summary: Save user home cards
+      description: scope="0".
+      tags:
+      - User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveUserHomeCardRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveUserHomeCardResponse'
+      security:
+      - ApiToken: []
+  /location/list_country:
+    get:
+      operationId: listCountry
+      summary: List countries
+      description: No parameters.
+      tags:
+      - Location
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCountryResponse'
+      security:
+      - ApiToken: []
+  /location/list_next:
+    post:
+      operationId: listNextLocation
+      summary: List child locations
+      description: id = parent id (omit for top).
+      tags:
+      - Location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListNextLocationRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListNextLocationResponse'
+      security:
+      - ApiToken: []
+  /location/list_timeZone:
+    get:
+      operationId: listTimeZone
+      summary: List time zones
+      description: 'Two uses: no params -> list of TimeZoneEntity; with deviceSn+apiVersion -> TimeZoneRootEntity. Response
+        schema modeled as oneOf.'
+      tags:
+      - Location
+      parameters:
+      - name: deviceSn
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: apiVersion
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTimeZoneResponse'
+      security:
+      - ApiToken: []
+  /location/get:
+    post:
+      operationId: locationGet
+      summary: Resolve location names
+      description: names = non-blank location names list.
+      tags:
+      - Location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationGetRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationGetResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/list:
+    post:
+      operationId: adminUserList
+      summary: Search users (admin)
+      description: searchMap entries are merged into the body (filter keys not enumerated).
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserListRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserListResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/userList:
+    post:
+      operationId: adminUserUserList
+      summary: List users
+      description: Optional roleLable filter.
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUserUserListRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserUserListResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/get_one_exactness:
+    post:
+      operationId: getOneExactness
+      summary: Find exact user by keyword
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetOneExactnessRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOneExactnessResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/list/plant/device/user:
+    post:
+      operationId: listPlantDeviceUser
+      summary: Search users for plant/device
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListPlantDeviceUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPlantDeviceUserResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/currentCountrySaleList:
+    post:
+      operationId: currentCountrySaleList
+      summary: List sales users in country
+      description: pageNum=1,pageSize=10.
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentCountrySaleListRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrentCountrySaleListResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/addDistributor:
+    post:
+      operationId: addDistributor
+      summary: Add distributor
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddDistributorRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddDistributorResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/addEndUser:
+    post:
+      operationId: addEndUser
+      summary: Add end user
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddEndUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddEndUserResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/editUser:
+    post:
+      operationId: editEndUser
+      summary: Edit end user
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditEndUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditEndUserResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/delete:
+    post:
+      operationId: deleteEndUser
+      summary: Delete end user
+      description: ''
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeleteEndUserRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteEndUserResponse'
+      security:
+      - ApiToken: []
+  /app/endUser/resetPassword:
+    post:
+      operationId: resetEndUserPassword
+      summary: Reset end user password
+      description: Server resets; no password sent.
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetEndUserPasswordRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetEndUserPasswordResponse'
+      security:
+      - ApiToken: []
+  /app/organ/list_organ_name:
+    post:
+      operationId: listOrganName
+      summary: Search organization names
+      description: pageNum=1,pageSize=10.
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListOrganNameRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListOrganNameResponse'
+      security:
+      - ApiToken: []
+  /app/adminuser/list_user_name:
+    post:
+      operationId: listUserName
+      summary: Search user names
+      description: pageNum=1,pageSize=10.
+      tags:
+      - UserAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListUserNameRequest'
+      responses:
+        '200':
+          description: 'Envelope (HTTP 200 always; check code: 200 ok, 998 token invalid, 1017 maintenance)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUserNameResponse'
+      security:
+      - ApiToken: []
+components:
+  schemas:
+    NodeLocItemEntity:
+      type: object
+      properties:
+        apiAddress:
+          type: string
+        icon:
+          type: string
+        iconBase64:
+          type: string
+        mqAddress:
+          type: string
+        nodeCode:
+          type: string
+        nodeName: {}
+        tips: {}
+    OrganListItemEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        orgCode:
+          type: string
+    UserRoleEntity:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: integer
+          format: int64
+        delFlag:
+          type: boolean
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: integer
+          format: int64
+        roleName:
+          type: string
+        roleType: {}
+    UserEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        createUserId:
+          type: string
+        token:
+          type: string
+          description: Value to send as Authorization header
+        headImg:
+          type: string
+        demoUser:
+          type: string
+        userType:
+          type: string
+        roleLable:
+          type: string
+        roleType:
+          type: string
+        weekPasswordType:
+          type: string
+        weekPasswordMessage:
+          type: string
+          description: Weak-password warning text
+        nodeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeLocItemEntity'
+        organListVOList:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganListItemEntity'
+        specialPermissionsMenus:
+          type: array
+          items:
+            type: string
+        userRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleEntity'
+      description: Login result
+    MessageSendResultEntity:
+      type: object
+      properties:
+        result:
+          type: boolean
+    ImageRootEntity:
+      type: object
+      properties:
+        browserInfo:
+          type: string
+        captchaFontSize:
+          type: string
+        captchaFontType:
+          type: string
+        captchaId:
+          type: string
+        captchaOriginalPath:
+          type: string
+        captchaType:
+          type: string
+        captchaVerification:
+          type: string
+        clientUid:
+          type: string
+        jigsawImageBase64:
+          type: string
+        originalImageBase64:
+          type: string
+        point:
+          type: string
+        pointJson:
+          type: string
+        pointList:
+          type: string
+        projectCode:
+          type: string
+        secretKey:
+          type: string
+        token:
+          type: string
+        ts:
+          type: string
+        wordList:
+          type: string
+        result:
+          type: boolean
+    BlockReqRootEntity:
+      type: object
+      properties:
+        repCode:
+          type: string
+        repMsg:
+          type: string
+        success:
+          type: boolean
+        repData:
+          $ref: '#/components/schemas/ImageRootEntity'
+      description: Block-puzzle captcha response (AJ-Captcha style)
+    UserInstallEntity:
+      type: object
+      properties:
+        companyName:
+          type: string
+        email:
+          type: string
+        installerCode:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+    LangListEntity:
+      type: object
+      properties:
+        code:
+          type: string
+        iconUrl:
+          type: string
+        name:
+          type: string
+    MessageCountEntity:
+      type: object
+      properties:
+        bluetoothUpgradeCount:
+          type: integer
+        deviceWarnCount:
+          type: integer
+        feedCount:
+          type: integer
+        messageCount:
+          type: integer
+        omWorkCount:
+          type: integer
+        total:
+          type: integer
+    LocationItemEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        parentId:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        nameEn:
+          type: string
+        namePinyin:
+          type: string
+        level:
+          type: string
+        path:
+          type: string
+        lat:
+          type: string
+        lng:
+          type: string
+        phoneZone:
+          type: string
+        timeZone:
+          type: string
+        zipCode:
+          type: string
+        currency:
+          type: string
+        dstFlagDisplay:
+          type: string
+        childrenCount:
+          type: integer
+        childrenList:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationItemEntity'
+    LocationEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        pid:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        nameEn:
+          type: string
+        namePinyin:
+          type: string
+        phoneZone:
+          type: string
+    NodeEntity:
+      type: object
+      properties:
+        nodeName:
+          type: string
+        nodeCode:
+          type: string
+        mqAddress:
+          type: string
+        apiAddress:
+          type: string
+        tips:
+          type: string
+        icon:
+          type: string
+        iconBase64:
+          type: string
+        default:
+          type: boolean
+    UserDetailEntity:
+      type: object
+      properties:
+        email:
+          type: string
+        headImg:
+          type: string
+        id:
+          type: string
+        installer:
+          type: string
+        orgAuthCode:
+          type: string
+        orgAuthCodeBase64:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+        realName:
+          type: string
+        roleType:
+          type: string
+    FileResponseEntity:
+      type: object
+      properties:
+        fileId:
+          type: string
+        fileName:
+          type: string
+        fileType:
+          type: string
+        fileUrl:
+          type: string
+        fileuploadStatus:
+          type: integer
+        videoImgUrl:
+          type: string
+    VersionListEntity:
+      type: object
+      properties:
+        forceUpdate:
+          type: string
+        instructions:
+          type: string
+        needUpdate:
+          type: string
+        newCustomDownUpperFlag:
+          type: string
+        osType:
+          type: string
+        url:
+          type: string
+        versionNo:
+          type: string
+    CustomerBaseEntity:
+      type: object
+      properties:
+        imags:
+          type: string
+        url:
+          type: string
+    TimeZoneEntity:
+      type: object
+      properties:
+        timeZone:
+          type: string
+    TimeZoneRootEntity:
+      type: object
+      properties:
+        timeZoneDefault:
+          type: string
+        timeZoneList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimeZoneEntity'
+    AppHelpEntity:
+      type: object
+      properties:
+        contactAddress:
+          type: string
+        contactAppVersion:
+          type: string
+        contactCompanyName:
+          type: string
+        contactEmail:
+          type: string
+        contactFax:
+          type: string
+        contactLandlineNumber:
+          type: string
+        contactLat:
+          type: string
+        contactLine:
+          type: string
+        contactLng:
+          type: string
+        contactName:
+          type: string
+        contactOtherPhone:
+          type: string
+        contactPhone:
+          type: string
+        contactSystemInfo:
+          type: string
+        contactUrl:
+          type: string
+        contactWebVersion:
+          type: string
+        contactZipCode:
+          type: string
+    BannerListEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        titleName:
+          type: string
+        desc:
+          type: string
+        url:
+          type: string
+        linkUrl:
+          type: string
+        type:
+          type: integer
+        urlType:
+          type: integer
+        sort:
+          type: integer
+        delFlag:
+          type: integer
+        createTime: {}
+        createUserId: {}
+        modifyTime: {}
+        modifyUserId: {}
+    TemperatureRootEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        temperatureUnit:
+          type: string
+          description: Temperature unit code (values not resolved; UI toggles C/F)
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        delFlag:
+          type: integer
+    TerminalUserListEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        realName:
+          type: string
+        countryId:
+          type: string
+        countryName:
+          type: string
+        phone:
+          type: string
+        phoneDesensitization:
+          type: string
+        phoneZone:
+          type: string
+        email:
+          type: string
+        emailDesensitization:
+          type: string
+        headImg:
+          type: string
+        orgNames:
+          type: string
+        userAuthority:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        lastLoginTime:
+          type: integer
+          format: int64
+    TerminalUserRootListEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        totalPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerminalUserListEntity'
+    HomeLayoutEnableRootEntity:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: integer
+        enableFlag:
+          type: string
+    NavHomeLayoutEnableRootEntity:
+      type: object
+      properties:
+        enableTrue:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeLayoutEnableRootEntity'
+        enableFalse:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeLayoutEnableRootEntity'
+        userHomeCardListAll:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeLayoutEnableRootEntity'
+    DictionaryRootEntity:
+      type: object
+      properties:
+        createTime:
+          type: string
+        createUserId:
+          type: string
+        defultValue:
+          type: string
+        delFlag:
+          type: string
+        dictCode:
+          type: string
+        dictLevel:
+          type: string
+        dictName:
+          type: string
+        dictSort:
+          type: string
+        dictValue:
+          type: string
+        extraFields1:
+          type: string
+        extraFields2:
+          type: string
+        extraFields3:
+          type: string
+        filterFlag:
+          type: string
+        id:
+          type: string
+        maxValue:
+          type: string
+        minValue:
+          type: string
+        modifyTime:
+          type: string
+        modifyUserId:
+          type: string
+        parentCode:
+          type: string
+        parentId:
+          type: string
+        remark:
+          type: string
+        required:
+          type: string
+        statusFlag:
+          type: string
+        useType:
+          type: string
+        writeFlag:
+          type: string
+    TagListBaseEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            type: string
+    PlantSearchEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        plantName:
+          type: string
+    PlantSearchRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPage:
+          type: integer
+        data: {}
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantSearchEntity'
+    SaleUserEntity:
+      type: object
+      properties:
+        countryId:
+          type: string
+        countryName:
+          type: string
+        id:
+          type: string
+        lang:
+          type: string
+        lastLoginIp:
+          type: string
+        orgCode:
+          type: string
+        orgIds:
+          type: string
+        orgNames:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+        realName:
+          type: string
+        roleIds:
+          type: string
+        roleLable:
+          type: string
+        roleNames:
+          type: string
+        userCode:
+          type: string
+        userName:
+          type: string
+        userType:
+          type: string
+        cityId: {}
+        cityName: {}
+        comEmail: {}
+        email: {}
+        enable: {}
+        extensionNo: {}
+        handleCountryName: {}
+        handleCountryNameEn: {}
+        headImg: {}
+        jobs: {}
+        nickName: {}
+        parentOrgIds: {}
+        parentOrgName: {}
+        provinceId: {}
+        provinceName: {}
+        remark: {}
+        saleParentId: {}
+        createTime:
+          type: integer
+          format: int64
+        lastLoginTime:
+          type: integer
+          format: int64
+        modifyTime:
+          type: integer
+          format: int64
+        enableFlag:
+          type: boolean
+    SaleUserRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        totalPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleUserEntity'
+    ProductClassEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        imgUrl:
+          type: string
+        nodeCode:
+          type: string
+        parentId:
+          type: string
+        parentName:
+          type: string
+        parentNodeCode:
+          type: string
+        rootNode:
+          type: string
+        createUserId:
+          type: string
+        modifyUserId:
+          type: string
+        latestUpdateEventId:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        hasUpdate:
+          type: boolean
+        isCs:
+          type: integer
+        layFlat:
+          type: integer
+        level:
+          type: integer
+        sort:
+          type: integer
+        useI18nValue:
+          type: integer
+        parentCount: {}
+    ProductClassRootEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        imgUrl: {}
+        nodeCode:
+          type: string
+        parentId:
+          type: string
+        parentName:
+          type: string
+        parentNodeCode:
+          type: string
+        rootNode:
+          type: string
+        createUserId:
+          type: string
+        modifyUserId:
+          type: string
+        typeArrayStr:
+          type: string
+        hasUpdate:
+          type: boolean
+        isCs:
+          type: integer
+        layFlat:
+          type: integer
+        level:
+          type: integer
+        sort:
+          type: integer
+        type:
+          type: integer
+        useI18nValue:
+          type: integer
+        childDropdownOption:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductClassEntity'
+    ProductSourceEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        imgUrl:
+          type: string
+        parentId:
+          type: string
+        createUserId:
+          type: string
+        modifyUserId:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        childCount:
+          type: integer
+        delFlag:
+          type: integer
+        type:
+          type: integer
+        hasUpdate:
+          type: boolean
+        parentCount: {}
+    ProductSourceRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSourceEntity'
+    ChildDropdownOption:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+        nodeCode:
+          type: string
+        parentId:
+          type: string
+        parentName:
+          type: string
+        parentNodeCode:
+          type: string
+        rootNode:
+          type: string
+        createUserId:
+          type: string
+        modifyUserId:
+          type: string
+        typeArrayStr:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        delFlag:
+          type: integer
+        layFlat:
+          type: integer
+        useI18nValue:
+          type: integer
+        typeArray:
+          type: array
+          items:
+            type: integer
+        childCount: {}
+        childDropdownOption: {}
+        data: {}
+        i18nName: {}
+        imgUrl: {}
+        json: {}
+        parentCount: {}
+        qrCodeUrl: {}
+        type: {}
+    VideoListEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+        coverId:
+          type: string
+        coverUrl:
+          type: string
+        dataContext:
+          type: string
+        dataDesc:
+          type: string
+        describeText:
+          type: string
+        deviceModel:
+          type: string
+        deviceType:
+          type: string
+        fileName:
+          type: string
+        voidName:
+          type: string
+        createUserId:
+          type: string
+        modifyUserId:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        modifyTime:
+          type: integer
+          format: int64
+        delFlag:
+          type: integer
+        enableStatus:
+          type: integer
+    VideoListRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoListEntity'
+    ProductDevicePackageEntity:
+      type: object
+      properties:
+        fieldId:
+          type: string
+        fileUrl:
+          type: string
+        id:
+          type: string
+        packageName:
+          type: string
+        packageVersion:
+          type: string
+        productType:
+          type: string
+        type:
+          type: string
+        update:
+          type: boolean
+    ProductDeviceRootPackageEntity:
+      type: object
+      properties:
+        update:
+          type: boolean
+        templatePackage:
+          $ref: '#/components/schemas/ProductDevicePackageEntity'
+        protocolPackage:
+          $ref: '#/components/schemas/ProductDevicePackageEntity'
+        standardPackage:
+          $ref: '#/components/schemas/ProductDevicePackageEntity'
+        permissionPackages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDevicePackageEntity'
+        productPackages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDevicePackageEntity'
+        selfTests:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductDevicePackageEntity'
+    SearchListLocItemEntity:
+      type: object
+      properties:
+        country:
+          $ref: '#/components/schemas/LocationItemEntity'
+        province:
+          $ref: '#/components/schemas/LocationItemEntity'
+        city:
+          $ref: '#/components/schemas/LocationItemEntity'
+        currency:
+          type: string
+        timeZone:
+          type: string
+    CaptchaPoint:
+      type: object
+      properties:
+        x:
+          type: number
+          format: double
+          description: slider X offset moved
+        y:
+          type: number
+          format: double
+          description: always 5.0
+    CaptchaGetResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/BlockReqRootEntity'
+      description: Success envelope; code 200.
+    CaptchaGetRequest:
+      type: object
+      properties:
+        captchaType:
+          type: string
+          description: always "blockPuzzle"
+      required:
+      - captchaType
+    CaptchaCheckResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/BlockReqRootEntity'
+      description: Success envelope; code 200.
+    CaptchaCheckRequest:
+      type: object
+      properties:
+        captchaType:
+          type: string
+          description: '"blockPuzzle"'
+        token:
+          type: string
+          description: repData.token from captcha/get
+        pointJson:
+          type: string
+          description: AES-encrypted point JSON
+      required:
+      - captchaType
+      - token
+      - pointJson
+    SendVerificationCodeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/MessageSendResultEntity'
+      description: Success envelope; code 200.
+    SendVerificationCodeRequest:
+      type: object
+      properties:
+        target:
+          type: string
+          description: '"phone" or "email"'
+        phone:
+          type: string
+          description: when target=phone
+        phoneZone:
+          type: string
+          description: country calling code, when target=phone
+        email:
+          type: string
+          description: when target=email
+        useType:
+          type: string
+          description: purpose code, see description
+        captchaVerification:
+          type: string
+          description: captcha proof from captcha flow
+      required:
+      - target
+      - useType
+      - captchaVerification
+    GetEmailCodeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    GetEmailCodeRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        useType:
+          type: string
+        captchaVerification:
+          type: string
+    VerifySmsCodeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    VerifySmsCodeRequest:
+      type: object
+      properties:
+        lable:
+          type: string
+          description: target account (phone or email)
+        verification:
+          type: string
+          description: code entered
+        apiVersion:
+          type: string
+          description: app version name
+    VerifyEmailCodeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    VerifyEmailCodeRequest:
+      type: object
+      properties:
+        lable:
+          type: string
+        verification:
+          type: string
+        useType:
+          type: string
+    IsPhoneExistResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    IsPhoneExistRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+    IsEmailExistResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    IsEmailExistRequest:
+      type: object
+      properties:
+        email:
+          type: string
+    UserLoginResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/UserEntity'
+      description: Success envelope; code 200.
+    UserLoginRequest:
+      type: object
+      properties:
+        userName:
+          type: string
+        password:
+          type: string
+          description: RSA+Base64 encrypted
+        version:
+          type: string
+          description: app version name
+        registrationId:
+          type: string
+          description: JPush registration id from local prefs (omitted if empty)
+        fcmToken:
+          type: string
+          description: FCM push token, omitted if empty
+      required:
+      - userName
+      - password
+    DemoUserLoginResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/UserEntity'
+      description: Success envelope; code 200.
+    DemoUserLoginRequest:
+      type: object
+      properties: {}
+    UserLogoutResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    UserLogoutRequest:
+      type: object
+      properties:
+        registrationId:
+          type: string
+          description: JPush registration id from local prefs (omitted if empty)
+        fcmToken:
+          type: string
+          description: FCM push token, omitted if empty
+    LogOffUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    LogOffUserRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        lable:
+          type: string
+        verification:
+          type: string
+        apiVersion:
+          type: string
+        registrationId:
+          type: string
+          description: JPush registration id from local prefs (omitted if empty)
+        fcmToken:
+          type: string
+          description: FCM push token, omitted if empty
+    SwitchUsersResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/UserEntity'
+      description: Success envelope; code 200.
+    SwitchUsersRequest:
+      type: object
+      properties:
+        registrationId:
+          type: string
+        keyword:
+          type: string
+          description: RSA encrypted, optional
+        switchUserId:
+          type: string
+          description: RSA encrypted, optional
+        fcmToken:
+          type: string
+          description: see push channel note
+    RegisterResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    RegisterRequest:
+      type: object
+      properties:
+        userType:
+          type: integer
+        countryId:
+          type: string
+        countryName:
+          type: string
+        phoneZone:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        checkCode:
+          type: string
+          description: SMS/email code
+        password:
+          type: string
+          description: RSA encrypted
+        passwordConfirm:
+          type: string
+          description: RSA encrypted
+        version:
+          type: string
+        parentCode:
+          type: string
+          description: inviter/installer code
+        companyName:
+          type: string
+        realName:
+          type: string
+        orgType:
+          type: string
+      required:
+      - userType
+    ForgetPasswordResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    ForgetPasswordRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+        email:
+          type: string
+        checkCode:
+          type: string
+        password:
+          type: string
+          description: RSA
+        passwordConfirm:
+          type: string
+          description: RSA
+        version:
+          type: string
+    ModifyPasswordResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    ModifyPasswordRequest:
+      type: object
+      properties:
+        oldPassword:
+          type: string
+          description: RSA
+        password:
+          type: string
+          description: RSA
+        passwordConfirm:
+          type: string
+          description: RSA
+        version:
+          type: string
+        registrationId:
+          type: string
+        fcmToken:
+          type: string
+    NodeListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/NodeEntity'
+      description: Success envelope; code 200.
+    LanguageListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/LangListEntity'
+      description: Success envelope; code 200.
+    LanguageListRequest:
+      type: object
+      properties:
+        apiVersion:
+          type: string
+          description: fixed "2.0"
+    HelpCenterResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/AppHelpEntity'
+      description: Success envelope; code 200.
+    AppVersionCheckUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/VersionListEntity'
+      description: Success envelope; code 200.
+    CheckProductRealtimePackageUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductDeviceRootPackageEntity'
+      description: Success envelope; code 200.
+    CheckProductRealtimePackageUpdateRequest:
+      type: object
+      properties:
+        templatePackage:
+          description: '{"id":"0"}'
+        protocolPackage:
+          description: '{"id":"0"}'
+        productPackages:
+          type: array
+          items: {}
+          description: '[{"id":"0"}]'
+    CheckProductSettingPackageUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductDeviceRootPackageEntity'
+      description: Success envelope; code 200.
+    CheckProductSettingPackageUpdateRequest:
+      type: object
+      properties:
+        standardPackage:
+          description: '{"id":"0"}'
+        productPackages:
+          type: array
+          items: {}
+          description: '[{"productType":"ACC"},{"productType":"IVEM"},{"productType":"IVGM"}]'
+    CheckWarningPackageUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductDevicePackageEntity'
+      description: Success envelope; code 200.
+    CheckWarningPackageUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: always 0
+    CheckProductPackageUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductDevicePackageEntity'
+      description: Success envelope; code 200.
+    CheckProductPackageUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: always "0"
+    EndUserInfoResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/UserDetailEntity'
+      description: Success envelope; code 200.
+    EditUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    EditUserRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        headImg:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        realName:
+          type: string
+      required:
+      - id
+    UpdatePhoneResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    UpdatePhoneRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+        verificationCode:
+          type: string
+        registrationId:
+          type: string
+        fcmToken:
+          type: string
+    EditEmailResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    EditEmailRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        verificationCode:
+          type: string
+        useType:
+          type: string
+          description: fixed "1002"
+        registrationId:
+          type: string
+        fcmToken:
+          type: string
+    UpdateUserOrganResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    UpdateUserOrganRequest:
+      type: object
+      properties:
+        installerCode:
+          type: string
+    InstallCodeInfoResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/UserInstallEntity'
+      description: Success envelope; code 200.
+    InstallCodeInfoRequest:
+      type: object
+      properties: {}
+    CurrentUserRoleResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+      description: Success envelope; code 200.
+    ListMenuResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+      description: Success envelope; code 200.
+    ListMenuRequest:
+      type: object
+      properties:
+        appVersion:
+          type: string
+          description: hard-coded "4.1.0"
+        targetScope:
+          type: string
+          description: fixed "1"
+        userId:
+          type: string
+    MineNotifyCountResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/MessageCountEntity'
+      description: Success envelope; code 200.
+    MineNotifyCountRequest:
+      type: object
+      properties:
+        orgCode:
+          type: string
+    UpdateTestPaperUserStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+      description: Success envelope; code 200.
+    UpdateTestPaperUserStatusRequest:
+      type: object
+      properties:
+        testPaperUserState:
+          type: integer
+          description: 1 or 2
+    GetUserSystemSettingResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TemperatureRootEntity'
+      description: Success envelope; code 200.
+    GetUserSystemSettingRequest:
+      type: object
+      properties:
+        pageSize:
+          type: integer
+        pageNum:
+          type: integer
+    SaveUserSystemSettingResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TemperatureRootEntity'
+      description: Success envelope; code 200.
+    SaveUserSystemSettingRequest:
+      type: object
+      properties:
+        temperatureUnit:
+          type: string
+    SaveUserOpinionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    SaveUserOpinionRequest:
+      type: object
+      properties:
+        deviceModel:
+          type: string
+        opinionClassId:
+          type: string
+        pageClassId:
+          type: string
+        opinionDesc:
+          type: string
+        opinionImgUrls:
+          type: array
+          items:
+            type: string
+    ListCarouselResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/BannerListEntity'
+      description: Success envelope; code 200.
+    ListCarouselRequest:
+      type: object
+      properties: {}
+    SaveChartTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+      description: Success envelope; code 200.
+    SaveChartTemplateRequest:
+      type: object
+      properties:
+        deviceSn:
+          type: string
+        field:
+          type: array
+          items:
+            type: string
+        chartType:
+          type: string
+        chartScopeType:
+          type: string
+        scopeType:
+          type: string
+    OtherUploadResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/FileResponseEntity'
+      description: Success envelope; code 200.
+    DeleteFileBatchResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+      description: Success envelope; code 200.
+    DeleteFileBatchRequest:
+      type: object
+      properties:
+        ids:
+          type: string
+    ListProductClassResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/ProductClassRootEntity'
+      description: Success envelope; code 200.
+    ListProductClassRequest:
+      type: object
+      properties:
+        useType:
+          type: integer
+        typeArray:
+          type: array
+          items:
+            type: integer
+        primaryId:
+          type: string
+    ListDropdownOptionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductSourceRootEntity'
+      description: Success envelope; code 200.
+    ListDropdownOptionRequest:
+      type: object
+      properties:
+        type:
+          description: int or string
+        group:
+          type: integer
+        parentId:
+          type: string
+        pageNum:
+          type: integer
+        pageSize:
+          type: integer
+    ListDropdownOptionAllResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/ChildDropdownOption'
+      description: Success envelope; code 200.
+    ListDropdownOptionAllRequest:
+      type: object
+      properties:
+        typeArray:
+          type: array
+          items:
+            type: string
+    ListVideoResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/VideoListRootEntity'
+      description: Success envelope; code 200.
+    ListVideoRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        classifyId:
+          type: string
+        enableStatus:
+          type: integer
+        pageNum:
+          type: integer
+        pageSize:
+          type: integer
+    DictionaryCheckResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DictionaryRootEntity'
+      description: Success envelope; code 200.
+    DictionaryCheckRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: fixed "127"
+        usePage:
+          type: string
+    ListHomeCardDeviceModelResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/HomeLayoutEnableRootEntity'
+      description: Success envelope; code 200.
+    ListHomeCardDeviceModelRequest:
+      type: object
+      properties:
+        plantId:
+          type: string
+        deviceSn:
+          type: string
+        useType:
+          type: string
+    ListUserHomeCardResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/NavHomeLayoutEnableRootEntity'
+      description: Success envelope; code 200.
+    ListUserHomeCardRequest:
+      type: object
+      properties:
+        scope:
+          type: integer
+    SaveUserHomeCardResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+      description: Success envelope; code 200.
+    SaveUserHomeCardRequest:
+      type: object
+      properties:
+        scope:
+          type: string
+        cardType:
+          type: array
+          items:
+            type: integer
+    ListCountryResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/LocationItemEntity'
+      description: Success envelope; code 200.
+    ListNextLocationResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/LocationItemEntity'
+      description: Success envelope; code 200.
+    ListNextLocationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+    ListTimeZoneResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            oneOf:
+            - type: array
+              items:
+                $ref: '#/components/schemas/TimeZoneEntity'
+            - $ref: '#/components/schemas/TimeZoneRootEntity'
+    LocationGetResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/SearchListLocItemEntity'
+      description: Success envelope; code 200.
+    LocationGetRequest:
+      type: object
+      properties:
+        names:
+          type: array
+          items:
+            type: string
+    AdminUserListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserRootListEntity'
+      description: Success envelope; code 200.
+    AdminUserListRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer
+    AdminUserUserListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserRootListEntity'
+      description: Success envelope; code 200.
+    AdminUserUserListRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        roleLable:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer
+    GetOneExactnessResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserListEntity'
+      description: Success envelope; code 200.
+    GetOneExactnessRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+    ListPlantDeviceUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserRootListEntity'
+      description: Success envelope; code 200.
+    ListPlantDeviceUserRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer
+    CurrentCountrySaleListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/SaleUserRootEntity'
+      description: Success envelope; code 200.
+    CurrentCountrySaleListRequest:
+      type: object
+      properties:
+        countryId:
+          type: string
+        realName:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer
+    AddDistributorResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    AddDistributorRequest:
+      type: object
+      properties:
+        countryId:
+          type: string
+        companyName:
+          type: string
+        phoneZone:
+          type: string
+        countryName:
+          type: string
+        realName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+    AddEndUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserListEntity'
+      description: Success envelope; code 200.
+    AddEndUserRequest:
+      type: object
+      properties:
+        countryId:
+          type: string
+        phoneZone:
+          type: string
+        countryName:
+          type: string
+        realName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+    EditEndUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    EditEndUserRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        countryId:
+          type: string
+        phoneZone:
+          type: string
+        countryName:
+          type: string
+        realName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+    DeleteEndUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    DeleteEndUserRequest:
+      type: object
+      properties:
+        id:
+          type: string
+    ResetEndUserPasswordResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            nullable: true
+            description: Not used / null
+      description: Success envelope; code 200.
+    ResetEndUserPasswordRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+    ListOrganNameResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TagListBaseEntity'
+      description: Success envelope; code 200.
+    ListOrganNameRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer
+    ListUserNameResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TagListBaseEntity'
+      description: Success envelope; code 200.
+    ListUserNameRequest:
+      type: object
+      properties:
+        keywords:
+          type: string
+        pageNum:
+          description: page number (int or string)
+        pageSize:
+          type: integer

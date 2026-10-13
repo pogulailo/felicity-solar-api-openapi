@@ -1,0 +1,20 @@
+# Vendor binaries and decompiler output must never be committed
+*.apk
+*.xapk
+*.aab
+*.dex
+*.jar
+jadx*/
+decompiled/
+captures/
+*.har
+*.pcap
+
+# Local environment
+.venv/
+venv/
+__pycache__/
+.DS_Store
+.idea/
+.vscode/
+.env

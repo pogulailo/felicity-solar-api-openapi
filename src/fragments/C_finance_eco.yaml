@@ -1,0 +1,3352 @@
+paths:
+  /app/finance/load/apply/list:
+    post:
+      operationId: financeLoanApplyList
+      summary: List loan applications
+      tags:
+      - Finance
+      description: Installer/referrer view (no userId). The app also sends userId = current UID for the personal list (same
+        endpoint).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+                userId:
+                  type: string
+              required:
+              - pageNum
+              - pageSize
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceLoanApplyPageResponse'
+  /app/finance/load/apply/submit:
+    post:
+      operationId: financeLoanApplySubmit
+      summary: Submit a customer loan application
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: string
+                applyTime:
+                  type: string
+                batteryCapacity:
+                  type: string
+                customerNo:
+                  type: string
+                email:
+                  type: string
+                inverterPower:
+                  type: string
+                name:
+                  type: string
+                occupation:
+                  type: string
+                phone:
+                  type: string
+                referralCode:
+                  type: string
+              description: All fields optional; empty strings are omitted by the client. applyTime is a date string.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceLoanApplyResponse'
+  /app/finance/load/apply/detail/{id}:
+    get:
+      operationId: financeLoanApplyDetail
+      summary: Loan application detail
+      tags:
+      - Finance
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Loan application id
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceLoanApplyDetailResponse'
+  /app/finance/load/apply/check/code/{code}:
+    get:
+      operationId: financeLoanApplyCheckCode
+      summary: Validate a referral code
+      tags:
+      - Finance
+      description: Returns success envelope if the referral code exists (data unused).
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Referral code
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/load/apply/approve:
+    post:
+      operationId: financeLoanApplyApprove
+      summary: Approve or reject a loan application (reviewer)
+      tags:
+      - Finance
+      description: 'Used for two flows: reject (status=3 with rejectReason) and approve (status=2 with contract data).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                status:
+                  type: integer
+                rejectReason:
+                  type: string
+                contractNo:
+                  type: string
+                transferRecordFile:
+                  type: string
+                contractFile:
+                  type: string
+                repaymentNum:
+                  type: integer
+                firstRepaymentDate:
+                  type: string
+                loanAmount:
+                  type: integer
+              required:
+              - id
+              - status
+              description: 'Reject: id,status=3,rejectReason. Approve: id,status=2,contractNo,transferRecordFile(file id),contractFile(file
+                id),repaymentNum,firstRepaymentDate,loanAmount.'
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/load/apply/cancel/{id}:
+    get:
+      operationId: financeLoanApplyCancel
+      summary: Cancel a loan application
+      tags:
+      - Finance
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/load/apply/delivery:
+    post:
+      operationId: financeLoanApplyDelivery
+      summary: Submit delivery proof for a loan application
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                deliveryRemark:
+                  type: string
+                deliveryTime:
+                  type: string
+                deliveryProofFileIds:
+                  type: array
+                  items:
+                    type: string
+              required:
+              - id
+              description: deliveryProofFileIds are uploaded file ids.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/bank/info/contact:
+    get:
+      operationId: financeBankContact
+      summary: Finance support contact
+      tags:
+      - Finance
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceContactResponse'
+  /app/finance/bank/info/list:
+    post:
+      operationId: financeBankBranchList
+      summary: List bank branches
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceBankBranchPageResponse'
+  /app/finance/referrer/my:
+    get:
+      operationId: financeReferrerMy
+      summary: My referrer profile
+      tags:
+      - Finance
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceReferrerResponse'
+  /app/finance/referrer/register:
+    post:
+      operationId: financeReferrerRegister
+      summary: Register as referrer
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                emailCheckCode:
+                  type: string
+                name:
+                  type: string
+                bankCard:
+                  type: string
+                parentReferralCode:
+                  type: string
+              description: Empty values omitted by client.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/referrer/update:
+    post:
+      operationId: financeReferrerUpdate
+      summary: Update referrer bank card
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                bankCard:
+                  type: string
+              required:
+              - id
+              - bankCard
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/finance/commission/list:
+    post:
+      operationId: financeCommissionList
+      summary: List commission settlement orders
+      tags:
+      - Finance
+      description: Paged commission settlement orders (CommissionListRootEntity). Extra filter keys may be merged from a UI-built
+        map (not statically determined).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+              required:
+              - pageNum
+              - pageSize
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSettlementOrderPageResponse'
+  /app/finance/commission/detail/{id}:
+    get:
+      operationId: financeCommissionDetail
+      summary: Commission settlement order detail
+      tags:
+      - Finance
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Settlement order id
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSettlementDetailResponse'
+  /app/finance/commission/settle:
+    post:
+      operationId: financeCommissionSettle
+      summary: Mark a settlement order paid (upload receipt)
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                receiptFile:
+                  type: string
+              required:
+              - id
+              description: receiptFile is an uploaded file id.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSettlementDetailResponse'
+  /app/finance/commission/submit:
+    post:
+      operationId: financeCommissionSubmit
+      summary: Submit a commission settlement request
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                applyIdList:
+                  type: array
+                  items:
+                    type: string
+                bankCard:
+                  type: string
+                bankCardUser:
+                  type: string
+              required:
+              - applyIdList
+              description: applyIdList = applyId values of selected commission items.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSettlementDetailResponse'
+  /app/finance/load/apply/settlement/list:
+    post:
+      operationId: financeSettlementCommissionList
+      summary: List loans eligible for commission settlement
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceCommissionPageResponse'
+  /app/finance/settlement/total:
+    post:
+      operationId: financeSettlementTotal
+      summary: Total commission summary
+      tags:
+      - Finance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FinanceSettlementTotalResponse'
+  /app/points/my:
+    get:
+      operationId: pointsMy
+      summary: My points summary
+      tags:
+      - Points
+      description: Also used by another DAO with declared type PointMallEntity (currentPoints, installerCertified,
+        level, orderCount); see PointsMall.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsHomeResponse'
+  /app/points/level/list:
+    post:
+      operationId: pointsLevelList
+      summary: Points levels
+      tags:
+      - Points
+      description: Sent as form-urlencoded POST with empty body (reqFormPostList).
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsLevelListResponse'
+  /app/points/task/list/model:
+    get:
+      operationId: pointsTaskListModel
+      summary: Points task catalogue
+      tags:
+      - Points
+      description: Literal query string activityList=2,3,4 is part of the path constant.
+      parameters:
+      - name: activityList
+        in: query
+        required: false
+        schema:
+          type: string
+        description: fixed value 2,3,4 (activity types)
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsTaskListResponse'
+  /app/points/question/type:
+    get:
+      operationId: pointsQuestionType
+      summary: Feedback question types
+      tags:
+      - Points
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsQuestionTypeListResponse'
+  /app/points/rules/description:
+    get:
+      operationId: pointsRulesDescription
+      summary: Points rules text lines
+      tags:
+      - Points
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsStringListResponse'
+  /app/points/apply/userlist:
+    post:
+      operationId: pointsApplyUserList
+      summary: My points applications
+      tags:
+      - Points
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsApplyPageResponse'
+  /app/points/apply/detail/{id}:
+    get:
+      operationId: pointsApplyDetail
+      summary: Points application detail
+      tags:
+      - Points
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsApplyDetailResponse'
+  /app/points/apply/revoke/{id}:
+    get:
+      operationId: pointsApplyRevoke
+      summary: Revoke a points application
+      tags:
+      - Points
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/points/list/device:
+    post:
+      operationId: pointsListDevice
+      summary: Device points records
+      tags:
+      - Points
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                activity:
+                  type: integer
+                deviceSn:
+                  type: string
+              required:
+              - activity
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PointsDevicePointPageResponse'
+  /app/points/apply/check/device:
+    get:
+      operationId: pointsApplyCheckDevice
+      summary: Check a device is eligible for a points application
+      tags:
+      - Points
+      description: activity is fixed to "2" by the client.
+      parameters:
+      - name: activity
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: deviceSn
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: id
+        in: query
+        required: false
+        schema:
+          type: string
+        description: existing application id when editing
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/points/apply/submit:
+    post:
+      operationId: pointsApplySubmit
+      summary: Create/update a points application
+      tags:
+      - Points
+      description: 'activity selects the form: 2 = install application (deviceSnList,address,phone...), 3 = feedback/question
+        (deviceSnList=[sn],questionType,remark), 4 = Trustpilot review (userName,trustpilotUrl). files is a comma separated
+        string of uploaded file ids (no brackets).'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                activity:
+                  type: integer
+                id:
+                  type: string
+                deviceSnList:
+                  type: array
+                  items:
+                    type: string
+                countryId:
+                  type: string
+                countryName:
+                  type: string
+                address:
+                  type: string
+                email:
+                  type: string
+                phoneZone:
+                  type: string
+                phone:
+                  type: string
+                remark:
+                  type: string
+                questionType:
+                  type: string
+                userName:
+                  type: string
+                trustpilotUrl:
+                  type: string
+                files:
+                  type: string
+              required:
+              - activity
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/ecoTask/list_ecoTask:
+    post:
+      operationId: ecoTaskList
+      summary: List eco tasks
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoTaskPageResponse'
+  /app/ecoTask/save_ecoTask:
+    post:
+      operationId: ecoTaskSave
+      summary: Create eco task
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskName:
+                  type: string
+                taskType:
+                  type: string
+                  enum:
+                  - tag
+                  - plant
+                  - device
+                targetList:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tagId:
+                        type: string
+                      plantId:
+                        type: string
+                      deviceId:
+                        type: string
+                    description: one of tagId/plantId/deviceId depending on taskType
+                templateId:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/ecoTask/update_ecoTask:
+    post:
+      operationId: ecoTaskUpdate
+      summary: Update eco task
+      tags:
+      - Eco
+      description: Same body as save plus id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                taskName:
+                  type: string
+                taskType:
+                  type: string
+                  enum:
+                  - tag
+                  - plant
+                  - device
+                targetList:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tagId:
+                        type: string
+                      plantId:
+                        type: string
+                      deviceId:
+                        type: string
+                templateId:
+                  type: string
+              required:
+              - id
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/ecoTask/delete_ecoTask/{id}:
+    get:
+      operationId: ecoTaskDelete
+      summary: Delete eco task
+      tags:
+      - Eco
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/ecoTask/get_ecoTask_detail:
+    post:
+      operationId: ecoTaskDetail
+      summary: Eco task target list
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskId:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoTaskTargetListResponse'
+  /app/ecoTask/run_ecoTask:
+    post:
+      operationId: ecoTaskRun
+      summary: Run eco task / poll initial run state
+      tags:
+      - Eco
+      description: runType is 0 for the initial query, 1 when a run was already started/finished (re-run) per UI logic; exact
+        semantics inferred.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                taskId:
+                  type: string
+                runTaskRecordId:
+                  type: string
+                runType:
+                  type: integer
+              required:
+              - runType
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoExecuteRunResponse'
+  /app/ecoTask/get_ecoTask_running_detail:
+    post:
+      operationId: ecoTaskRunningDetail
+      summary: Running detail of a task run
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                runTaskRecordId:
+                  type: string
+                taskId:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoExecuteRunResponse'
+  /app/ecoTaskRunRecord/list_ecoTaskRunRecord:
+    post:
+      operationId: ecoTaskRunRecordList
+      summary: List task run records
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoTaskRunRecordPageResponse'
+  /app/ecoTaskRunRecord/get_ecoTaskRunRecordDetail:
+    post:
+      operationId: ecoTaskRunRecordDetail
+      summary: Run record per-device results
+      tags:
+      - Eco
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                id:
+                  type: string
+                commandStatus:
+                  type: string
+                  description: '"1" success / "0" failed (UI tabs); omitted = all'
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoExecuteRunResponse'
+  /app/ecoStrategyTemplate/list_ecoStrategyTemplate:
+    post:
+      operationId: ecoStrategyTemplateList
+      summary: List strategy templates
+      tags:
+      - Eco
+      description: Also called with only id (+pageNum=1) to fetch a single template.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+                keywords:
+                  type: string
+                id:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoStrategyTemplatePageResponse'
+  /app/ecoStrategyTemplate/save_ecoStrategyTemplate:
+    post:
+      operationId: ecoStrategyTemplateSave
+      summary: Create strategy template
+      tags:
+      - Eco
+      description: 'Body keys come from a UI-built map: one key per parameter-table UUID (e.g. strategy1..strategy10), each
+        an object of deviceParamName -> value (strings/ints; weekday bitmask expanded as array of 7 "0"/"1").'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateName:
+                  type: string
+              description: Plus dynamic strategyN objects (see EcoStrategyTemplate).
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoStrategyTemplateResponse'
+  /app/ecoStrategyTemplate/update_ecoStrategyTemplate:
+    post:
+      operationId: ecoStrategyTemplateUpdate
+      summary: Update strategy template
+      tags:
+      - Eco
+      description: Same as save plus id.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                templateName:
+                  type: string
+              required:
+              - id
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoStrategyTemplateResponse'
+  /app/ecoStrategyTemplate/delete_ecoStrategyTemplate/{id}:
+    get:
+      operationId: ecoStrategyTemplateDelete
+      summary: Delete strategy template
+      tags:
+      - Eco
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/greenPowerPlan/get_green_power_plan_status/{deviceSn}:
+    get:
+      operationId: greenPowerPlanStatus
+      summary: Whether AI/green power plan is supported for a device
+      tags:
+      - GreenPower
+      parameters:
+      - name: deviceSn
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerSwitchResponse'
+  /app/greenPowerPlan/get_green_power_plan/{deviceSn}:
+    get:
+      operationId: greenPowerPlanGet
+      summary: Get green power plan of a device
+      tags:
+      - GreenPower
+      parameters:
+      - name: deviceSn
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerPlanResponse'
+  /app/greenPowerPlan/get_green_power_plan_overview:
+    post:
+      operationId: greenPowerPlanOverview
+      summary: Get plan overview (with settings)
+      tags:
+      - GreenPower
+      description: Body is a UI-built map; likely same shape as update body (id, deviceSn, greenPowerPlanType, aiControl,
+        ...). Exact keys unverified.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerPlanResponse'
+  /app/greenPowerPlan/update_greenPowerPlan:
+    post:
+      operationId: greenPowerPlanUpdate
+      summary: Update green power plan
+      tags:
+      - GreenPower
+      description: Body built from the cached plan (fc.d.i()). Empty price/rate/vat fields omitted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                deviceSn:
+                  type: string
+                lastAiPlanStartTime:
+                  type: string
+                greenPowerPlanType:
+                  type: integer
+                aiControl:
+                  type: integer
+                priceCompany:
+                  type: string
+                rate:
+                  type: number
+                taxIncludedFlag:
+                  type: integer
+                vat:
+                  type: string
+                zeroFeed:
+                  type: integer
+                normalPlan:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/GreenPowerNormalPlan'
+                boundaryParam:
+                  $ref: '#/components/schemas/GreenPowerBoundaryParam'
+              required:
+              - id
+              - deviceSn
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerPlanResponse'
+  /app/elecPrice/getElecPrice:
+    post:
+      operationId: elecPriceGet
+      summary: Get electricity price table for a day
+      tags:
+      - GreenPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataTime:
+                  type: string
+                greenPowerPlanId:
+                  type: string
+                priceCompany:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerPriceResponse'
+  /app/elecPrice/update_elecPrice:
+    post:
+      operationId: elecPriceUpdate
+      summary: Update electricity price settings
+      tags:
+      - GreenPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                dataTime:
+                  type: string
+                greenPowerPlanId:
+                  type: string
+                priceCompany:
+                  type: string
+                vat:
+                  type: string
+                rate:
+                  type: string
+                taxIncludedFlag:
+                  type: integer
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/greenPowerPlan/prediction:
+    post:
+      operationId: greenPowerPlanPrediction
+      summary: PV/load forecast vs actual
+      tags:
+      - GreenPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                deviceSn:
+                  type: string
+              required:
+              - date
+              - deviceSn
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerPredictionResponse'
+  /app/greenPowerPlanStatistics/profit_chart:
+    post:
+      operationId: greenPowerProfitChart
+      summary: AI profit chart
+      tags:
+      - GreenPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dateStr:
+                  type: string
+                deviceSn:
+                  type: string
+                timeDimension:
+                  type: string
+                  description: time granularity (day/month/year style; values not determined)
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerProfitChartResponse'
+  /app/greenPowerPlanStatistics/overview:
+    post:
+      operationId: greenPowerStatisticsOverview
+      summary: AI income overview
+      tags:
+      - GreenPower
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                greenPowerPlanId:
+                  type: string
+                dataTime:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GreenPowerIncomeResponse'
+  /app/greenPowerPlan/plant_next_24h_forecast/{plantId}:
+    get:
+      operationId: aiSchedulePlantForecast
+      summary: 'AI schedule: next 24h strategy chart for plant'
+      tags:
+      - GreenPower
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiScheduleDisplayResponse'
+  /app/ai_schedule/get:
+    post:
+      operationId: aiScheduleGet
+      summary: Get AI schedule status/strategies for a plant
+      tags:
+      - AiSchedule
+      description: Same endpoint used with plantId+id and optionally objectiveMode.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                id:
+                  type: string
+                objectiveMode:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiScheduleStatusResponse'
+  /app/ai_schedule/get_personalPreference:
+    post:
+      operationId: aiSchedulePersonalPreference
+      summary: Get AI parameter settings for an objective mode
+      tags:
+      - AiSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                objectiveMode:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiScheduleSettingResponse'
+  /app/ai_schedule/save_guardian:
+    post:
+      operationId: aiScheduleSaveGuardian
+      summary: Enable/disable guardian mode
+      tags:
+      - AiSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                guardianEnabled:
+                  type: integer
+                  enum:
+                  - 0
+                  - 1
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+              required:
+              - plantId
+              description: latitude/longitude only sent when both non-zero.
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+  /app/providers/{providerCode}/connect/token:
+    post:
+      operationId: providerConnectToken
+      summary: Start provider connect flow
+      tags:
+      - ElectricityProvider
+      parameters:
+      - name: providerCode
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                plantId:
+                  type: string
+              required:
+              - plantId
+              description: category = price category (buy/sell, exact values not determined).
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceProviderConnectResponse'
+  /app/providers/{provider}/status/token:
+    get:
+      operationId: providerConnectStatus
+      summary: Poll provider connect status
+      tags:
+      - ElectricityProvider
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: connectToken
+        in: query
+        required: true
+        schema:
+          type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceProviderConnectStatusResponse'
+  /app/providers/{providerCode}/disconnect:
+    post:
+      operationId: providerDisconnect
+      summary: Disconnect provider
+      tags:
+      - ElectricityProvider
+      parameters:
+      - name: providerCode
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                plantId:
+                  type: string
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcoAnyDataResponse'
+components:
+  schemas:
+    FinanceFileInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        fileUrl:
+          type: string
+        fileType:
+          type: string
+        fileSuffix:
+          type: string
+        fileSize:
+          type: string
+        videoImgUrl:
+          type: string
+    FinanceFile:
+      type: object
+      properties:
+        fileId:
+          type: string
+        fileName:
+          type: string
+        fileType:
+          type: string
+        fileUrl:
+          type: string
+        fileuploadStatus:
+          type: integer
+        type:
+          type: string
+        videoImgUrl:
+          type: string
+      description: 'FileResponseEntity: uploaded file descriptor'
+    FinanceLoanApply:
+      type: object
+      properties:
+        address:
+          type: string
+        applyNo:
+          type: string
+        batteryCapacity:
+          type: string
+        contractFile:
+          type: string
+        contractNo:
+          type: string
+        createUserName:
+          type: string
+        customerNo:
+          type: string
+        cutOffDate:
+          type: string
+        deliveryProofFile:
+          type: string
+        deliveryRemark:
+          type: string
+        deliveryTime:
+          type: string
+        email:
+          type: string
+        firstRepaymentDate:
+          type: string
+        id:
+          type: string
+        inverterPower:
+          type: string
+        loanAmount:
+          type: string
+        loanAmountUnit:
+          type: string
+        loanTime:
+          type: string
+        name:
+          type: string
+        occupation:
+          type: string
+        phone:
+          type: string
+        referralCode:
+          type: string
+        referralName:
+          type: string
+        rejectReason:
+          type: string
+        userId:
+          type: string
+        applyTime:
+          type: integer
+          format: int64
+          description: epoch ms
+        commissionSettlementStatus:
+          type: integer
+        repaymentNum:
+          type: integer
+        scope:
+          type: integer
+        status:
+          type: integer
+          description: apply status; client sends 2 when approving and 3 when rejecting; full enum unknown
+      description: Loan application record (FinancePersinalRecordListEntity)
+    FinanceLoanApplyPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceLoanApply'
+    FinanceLoanApplyDetail:
+      type: object
+      properties:
+        address:
+          type: string
+        batteryCapacity:
+          type: string
+        contractNo:
+          type: string
+        customerNo:
+          type: string
+        cutOffDate:
+          type: string
+        delFlag:
+          type: string
+        deliveryRemark:
+          type: string
+        deliveryTime:
+          type: string
+        email:
+          type: string
+        firstRepaymentDate:
+          type: string
+        id:
+          type: string
+        inverterPower:
+          type: string
+        loanAmount:
+          type: string
+        loanAmountUnit:
+          type: string
+        loanTime:
+          type: string
+        name:
+          type: string
+        occupation:
+          type: string
+        phone:
+          type: string
+        referralCode:
+          type: string
+        rejectReason:
+          type: string
+        repaymentNum:
+          type: string
+        scope:
+          type: string
+        userId:
+          type: string
+        applyTime:
+          type: integer
+          format: int64
+        commissionSettlementStatus:
+          type: integer
+        status:
+          type: integer
+        contractFile:
+          $ref: '#/components/schemas/FinanceFileInfo'
+        transferRecordFile:
+          $ref: '#/components/schemas/FinanceFileInfo'
+        deliveryProofFileList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceFileInfo'
+    FinanceReferrer:
+      type: object
+      properties:
+        bankCard:
+          type: string
+        commissionRate:
+          type: string
+        email:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        qrCodeH5Url:
+          type: string
+        referralCode:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+    FinanceContact:
+      type: object
+      properties:
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+    FinanceBankBranch:
+      type: object
+      properties:
+        id:
+          type: string
+        bankName:
+          type: string
+        bankAddress:
+          type: string
+        country:
+          type: integer
+        state:
+          type: string
+        town:
+          type: string
+    FinanceBankBranchPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceBankBranch'
+    FinanceCommissionItem:
+      type: object
+      properties:
+        applyId:
+          type: string
+        applyNo:
+          type: string
+        commission:
+          type: string
+        contractNo:
+          type: string
+        customerNo:
+          type: string
+        loanAmount:
+          type: string
+        loanAmountUnit:
+          type: string
+        name:
+          type: string
+        source:
+          type: string
+        canSettlement:
+          type: boolean
+        commissionSettlementStatus:
+          type: integer
+          description: settlement status of this loan
+        loanTime:
+          type: integer
+          format: int64
+    FinanceSettlementDetail:
+      type: object
+      properties:
+        applyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceCommissionItem'
+        applyTime:
+          type: integer
+          format: int64
+        bankCard:
+          type: string
+        bankCardUser:
+          type: string
+        deliveryProofFile:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceFile'
+        id:
+          type: string
+        orderNo:
+          type: string
+        receiptFile:
+          $ref: '#/components/schemas/FinanceFile'
+        referralCode:
+          type: string
+        referrerId:
+          type: string
+        remark:
+          type: string
+        status:
+          type: integer
+        totalCommission:
+          type: string
+        transferRecordFiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceFile'
+      description: 'SettlementCommissionListRootEntity: commission settlement order'
+    FinanceSettlementOrder:
+      type: object
+      properties:
+        applyIdList:
+          type: string
+        bankCard:
+          type: string
+        bankCardUser:
+          type: string
+        createUserId:
+          type: string
+        id:
+          type: string
+        loanAmountUnit:
+          type: string
+        modifyUserId:
+          type: string
+        orderNo:
+          type: string
+        referralCode:
+          type: string
+        referralName:
+          type: string
+        referrerId:
+          type: string
+        remark:
+          type: string
+        totalCommission:
+          type: string
+        applyTime:
+          type: integer
+          format: int64
+        createTime:
+          type: integer
+          format: int64
+        modifyTime:
+          type: integer
+          format: int64
+        status:
+          type: integer
+    FinanceSettlementOrderPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceSettlementOrder'
+    FinanceCommissionPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        data:
+          description: untyped (Kotlin Object / free-form)
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/FinanceCommissionItem'
+    FinanceSettlementTotal:
+      type: object
+      properties:
+        loanAmountUnit:
+          type: string
+        totalCommission:
+          type: string
+    PointsFileResource:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        dataScope:
+          description: untyped (Kotlin Object / free-form)
+        dataScopeUserId:
+          description: untyped (Kotlin Object / free-form)
+        delFlag:
+          type: boolean
+        expireTime:
+          type: integer
+          format: int64
+        fileSize:
+          type: string
+        fileSort:
+          type: string
+        fileSuffix:
+          type: string
+        fileType:
+          type: string
+        fileUrl:
+          type: string
+        id:
+          type: string
+        md5Value:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        otherUserId:
+          description: untyped (Kotlin Object / free-form)
+        presentName:
+          type: string
+        remark:
+          description: untyped (Kotlin Object / free-form)
+        sourceName:
+          type: string
+        sourceUrl:
+          type: string
+        type:
+          type: string
+        videoImgUrl:
+          description: untyped (Kotlin Object / free-form)
+    PointsApplyDetail:
+      type: object
+      properties:
+        activity:
+          type: integer
+          description: 'activity type: 2 install, 3 feedback/question, 4 Trustpilot review (inferred from submit usage)'
+        activityName:
+          type: string
+        address:
+          type: string
+        applyTime:
+          type: integer
+          format: int64
+        approvalTime:
+          description: untyped (Kotlin Object / free-form)
+        approvalUserId:
+          description: untyped (Kotlin Object / free-form)
+        approvalUserName:
+          description: untyped (Kotlin Object / free-form)
+        countryId:
+          type: string
+        countryName:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        deviceSnList:
+          type: array
+          items:
+            type: string
+        email:
+          type: string
+        fileList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointsFileResource'
+        id:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+        questionType:
+          type: string
+        questionTypeStr:
+          type: string
+        rejectReason:
+          type: string
+        remark:
+          type: string
+        status:
+          type: integer
+        timeZone:
+          description: untyped (Kotlin Object / free-form)
+        trustpilotUrl:
+          type: string
+        userId:
+          type: string
+        userName:
+          type: string
+    PointsApplyListItem:
+      type: object
+      properties:
+        activity:
+          type: integer
+        activityName:
+          type: string
+        address:
+          type: string
+        applyTime:
+          type: integer
+          format: int64
+        approvalTime:
+          type: integer
+          format: int64
+        approvalUserId:
+          type: string
+        approvalUserName:
+          type: string
+        countryId:
+          type: string
+        countryName:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        deviceSnList:
+          description: untyped (Kotlin Object / free-form)
+        email:
+          type: string
+        id:
+          type: string
+        phone:
+          type: string
+        points:
+          type: string
+        questionType:
+          description: untyped (Kotlin Object / free-form)
+        rejectReason:
+          description: untyped (Kotlin Object / free-form)
+        remark:
+          type: string
+        status:
+          type: integer
+        timeZone:
+          description: untyped (Kotlin Object / free-form)
+        userId:
+          type: string
+        userName:
+          type: string
+    PointsApplyPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        data:
+          description: untyped (Kotlin Object / free-form)
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointsApplyListItem'
+    PointsDevicePoint:
+      type: object
+      properties:
+        activity:
+          type: integer
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+        points:
+          type: integer
+        pointsApplyId:
+          type: string
+    PointsDevicePointPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        data:
+          description: untyped (Kotlin Object / free-form)
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PointsDevicePoint'
+    PointsHome:
+      type: object
+      properties:
+        applyCount:
+          type: integer
+        countryId:
+          type: string
+        countryName:
+          type: string
+        currentPoints:
+          type: string
+        email:
+          type: string
+        id:
+          type: string
+        level:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        nextLevel:
+          type: string
+        phone:
+          type: string
+        redeemCount:
+          type: integer
+        userId:
+          type: string
+        userName:
+          type: string
+    PointsMall:
+      type: object
+      properties:
+        currentPoints:
+          type: string
+        installerCertified:
+          type: string
+        level:
+          type: string
+        orderCount:
+          type: string
+    PointsQuestionType:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+    PointsLevel:
+      type: object
+      properties:
+        id:
+          type: string
+        level:
+          type: string
+        startPoints:
+          type: string
+        endPoints:
+          type: string
+    PointsTask:
+      type: object
+      properties:
+        activity:
+          type: integer
+        currentRatingCount:
+          type: string
+        guideLink:
+          type: string
+        id:
+          type: string
+        models:
+          type: array
+          items:
+            type: string
+        pointStr:
+          type: string
+        taskName:
+          type: string
+        totalRatingCount:
+          type: string
+    EcoExecuteDetail:
+      type: object
+      properties:
+        alias:
+          type: string
+        commandId:
+          description: untyped (Kotlin Object / free-form)
+        commandStatus:
+          type: string
+          description: '"1" success, "0" failure (per UI)'
+        deviceId:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+        tagId:
+          description: untyped (Kotlin Object / free-form)
+        tagName:
+          description: untyped (Kotlin Object / free-form)
+        taskId:
+          type: string
+    EcoExecuteRun:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        modifyTime:
+          type: integer
+          format: int64
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        detailListVOList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoExecuteDetail'
+        failCount:
+          type: string
+        successCount:
+          type: string
+        id:
+          type: string
+        remainTime:
+          type: string
+        runTaskRecordId:
+          type: string
+        runType:
+          description: untyped (Kotlin Object / free-form)
+        taskName:
+          type: string
+        taskStatus:
+          type: string
+        taskType:
+          type: string
+        templateId:
+          type: string
+        templateName:
+          description: untyped (Kotlin Object / free-form)
+    EcoTaskTarget:
+      type: object
+      properties:
+        alias:
+          type: string
+        commandId:
+          type: string
+        commandStatus:
+          type: string
+        deviceId:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+        tagId:
+          type: string
+        tagName:
+          type: string
+        taskId:
+          type: string
+      description: 'TemplateTaskRootEntity: task target row (device/plant/tag)'
+    EcoTaskRunRecord:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        delFlag:
+          type: integer
+        failCount:
+          type: integer
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        runType:
+          type: integer
+        successCount:
+          type: integer
+        taskId:
+          type: string
+        taskName:
+          type: string
+        taskStatus:
+          type: integer
+        taskType:
+          type: string
+        templateId:
+          type: string
+        userId:
+          type: string
+    EcoTaskRunRecordPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoTaskRunRecord'
+    EcoTask:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        delFlag:
+          type: integer
+        detailListVOList:
+          description: untyped (Kotlin Object / free-form)
+        failCount:
+          description: untyped (Kotlin Object / free-form)
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        runTaskRecordId:
+          type: string
+        runType:
+          description: untyped (Kotlin Object / free-form)
+        successCount:
+          description: untyped (Kotlin Object / free-form)
+        taskName:
+          type: string
+        taskStatus:
+          description: untyped (Kotlin Object / free-form)
+        taskType:
+          type: string
+        templateId:
+          type: string
+        templateName:
+          type: string
+        userId:
+          type: string
+    EcoTaskPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoTask'
+    EcoStrategyData:
+      type: object
+      properties:
+        backupReserve:
+          type: string
+        electricityPrice:
+          type: string
+        endDay:
+          type: string
+        endTime:
+          type: string
+        power:
+          type: string
+        soc:
+          type: string
+        startDay:
+          type: string
+        startTime:
+          type: string
+        strategy:
+          type: string
+        weekDay:
+          type: array
+          items:
+            type: string
+    EcoStrategyTemplate:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        delFlag:
+          type: integer
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        templateId:
+          type: string
+        templateName:
+          type: string
+        userId:
+          type: string
+        strategy1:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy2:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy3:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy4:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy5:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy6:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy7:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy8:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy9:
+          $ref: '#/components/schemas/EcoStrategyData'
+        strategy10:
+          $ref: '#/components/schemas/EcoStrategyData'
+    EcoStrategyTemplatePage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoStrategyTemplate'
+    GreenPowerSwitch:
+      type: object
+      properties:
+        aiControl:
+          type: integer
+        greenPowerPlanType:
+          type: string
+        isSupport:
+          type: string
+    GreenPowerNormalPlan:
+      type: object
+      properties:
+        chargingSOC:
+          type: string
+        dischargingSOC:
+          type: string
+        electricPrice:
+          type: string
+        endTime:
+          type: string
+        forcedPower:
+          type: string
+        mode:
+          type: string
+        startTime:
+          type: string
+        temporaryPower:
+          type: string
+        weatherLevel:
+          type: string
+        timeSwitch:
+          type: integer
+    GreenPowerBoundaryParam:
+      type: object
+      properties:
+        autoChargePrice:
+          type: string
+        autoDischargePrice:
+          type: string
+        batRatedCapacity:
+          type: string
+        batRatedChargingPower:
+          type: string
+        dataTime:
+          type: string
+        emMaxPower:
+          type: string
+        keepEndTime:
+          type: string
+        keepSoc:
+          type: string
+        keepStartTime:
+          type: string
+        lat:
+          type: string
+        lon:
+          type: string
+        priceCompany:
+          type: string
+        troughBatChargeMaxSoc:
+          type: string
+        troughBatDischargeMaxSoc:
+          type: string
+        useElectricEndTime1:
+          type: string
+        useElectricEndTime2:
+          type: string
+        useElectricStartTime1:
+          type: string
+        useElectricStartTime2:
+          type: string
+    GreenPowerPlan:
+      type: object
+      properties:
+        aiControl:
+          type: string
+        createUserId:
+          type: string
+        deviceSn:
+          type: string
+        editAble:
+          type: string
+        greenPowerPlanType:
+          type: string
+        id:
+          type: string
+        lastAiPlanStartTime:
+          type: string
+        modifyUserId:
+          type: string
+        phraseImg:
+          type: string
+        priceCompany:
+          type: string
+        rate:
+          type: string
+        ratedPower:
+          type: string
+        settingSnapshot:
+          type: string
+        taxIncludedFlag:
+          type: string
+        vat:
+          type: string
+        zeroFeed:
+          type: string
+        aiPlan:
+          type: array
+          items:
+            $ref: '#/components/schemas/GreenPowerNormalPlan'
+        normalPlan:
+          type: array
+          items:
+            $ref: '#/components/schemas/GreenPowerNormalPlan'
+        boundaryParam:
+          $ref: '#/components/schemas/GreenPowerBoundaryParam'
+        createTime:
+          type: integer
+          format: int64
+        modifyTime:
+          type: integer
+          format: int64
+    GreenPowerPriceItem:
+      type: object
+      properties:
+        endTime:
+          type: string
+        peakValley:
+          type: integer
+        price:
+          type: string
+        priceStr:
+          type: string
+        sort:
+          description: untyped (Kotlin Object / free-form)
+        startTime:
+          type: string
+    GreenPowerPrice:
+      type: object
+      properties:
+        dataTime:
+          type: string
+        id:
+          type: string
+        priceArr:
+          type: array
+          items:
+            type: string
+        priceCompany:
+          type: string
+        pricesDayList:
+          type: array
+          items:
+            $ref: '#/components/schemas/GreenPowerPriceItem'
+        rate:
+          type: string
+        source:
+          type: string
+        taxIncludedFlag:
+          type: string
+        unit:
+          type: string
+        vat:
+          type: string
+    GreenPowerChartSeries:
+      type: object
+      properties:
+        actual:
+          type: array
+          items:
+            type: string
+        forecast:
+          type: array
+          items:
+            type: string
+        unit:
+          type: string
+    GreenPowerDeviceChart:
+      type: object
+      properties:
+        loadChart:
+          $ref: '#/components/schemas/GreenPowerChartSeries'
+        pvChart:
+          $ref: '#/components/schemas/GreenPowerChartSeries'
+    GreenPowerPredictDevice:
+      type: object
+      properties:
+        deviceChart:
+          $ref: '#/components/schemas/GreenPowerDeviceChart'
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+    GreenPowerPredictPlant:
+      type: object
+      properties:
+        deviceList:
+          type: array
+          items:
+            $ref: '#/components/schemas/GreenPowerPredictDevice'
+        plantChart:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+    GreenPowerPrediction:
+      type: object
+      properties:
+        plants:
+          type: array
+          items:
+            $ref: '#/components/schemas/GreenPowerPredictPlant'
+    EcoChartHeader:
+      type: object
+      properties:
+        chose:
+          type: string
+        i18nName:
+          type: string
+        label:
+          type: string
+        name:
+          type: string
+        sort:
+          type: integer
+    EcoChartSeries:
+      type: object
+      properties:
+        classify:
+          type: string
+        cs_CZ:
+          type: string
+        de_DE:
+          type: string
+        en_US:
+          type: string
+        es_ES:
+          type: string
+        field:
+          type: string
+        it_IT:
+          type: string
+        legendColor:
+          type: string
+        name:
+          type: string
+        pl_PL:
+          type: string
+        ro_RO:
+          type: string
+        ru_RU:
+          type: string
+        uk_UK:
+          type: string
+        unit:
+          type: string
+        vi_VN:
+          type: string
+        zh_CN:
+          type: string
+        data:
+          type: array
+          items:
+            type: string
+    GreenPowerProfitChart:
+      type: object
+      properties:
+        chartDrawingType:
+          type: string
+        dataTime:
+          type: array
+          items:
+            type: string
+        header:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoChartHeader'
+        storageMateDTOS:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoChartSeries'
+        chartUnit:
+          type: string
+        totalAiOffExpenses:
+          type: string
+        totalAiOnExpenses:
+          type: string
+        totalGreenRevenue:
+          type: string
+        totalSaveRevenue:
+          type: string
+        unit:
+          type: string
+    AiScheduleDisplay:
+      type: object
+      properties:
+        chartDrawingType:
+          type: string
+        dataTime:
+          type: array
+          items:
+            type: string
+        header:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoChartHeader'
+        storageMateDTOS:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcoChartSeries'
+      description: AiSchedulingDisplay chart
+    GreenPowerIncome:
+      type: object
+      properties:
+        aiControl:
+          type: string
+        aiOffExpensesDay:
+          type: string
+        aiOnExpensesDay:
+          type: string
+        currencyUnit:
+          type: string
+        dataTime:
+          type: string
+        deviceSn:
+          type: string
+        greenRevenueDay:
+          type: string
+        plantName:
+          type: string
+        ratedPower:
+          type: string
+        ratedPowerUnit:
+          type: string
+        saveRevenueDay:
+          type: string
+        timeZone:
+          type: string
+        yesterdaySaveRevenueEnergy:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+    AiScheduleStrategy:
+      type: object
+      properties:
+        active:
+          type: boolean
+        aiEnable:
+          description: untyped (Kotlin Object / free-form)
+        algoAllowBatteryToGrid:
+          type: boolean
+        algoAllowGridExport:
+          type: boolean
+        algoAllowGridToBattery:
+          type: boolean
+        algoBackupSocPct:
+          type: string
+        algoBatteryChargeLimitKw:
+          type: string
+        algoBatteryDischargeLimitKw:
+          type: string
+        algoEvLimitKw:
+          type: string
+        algoGridExportLimitKw:
+          type: string
+        algoGridImportLimitKw:
+          type: string
+        algoMaxSocPct:
+          type: string
+        algoMinSocPct:
+          type: string
+        algoPvLimitKw:
+          type: string
+        buyPrice:
+          type: string
+        ctSelect:
+          description: untyped (Kotlin Object / free-form)
+        electricityPrice:
+          type: string
+        endTime:
+          type: string
+        hourIndex:
+          type: integer
+        meterS:
+          description: untyped (Kotlin Object / free-form)
+        powerDirection:
+          type: string
+        socAfterAction:
+          type: string
+        startTime:
+          type: string
+        tips:
+          type: string
+    AiScheduleStatus:
+      type: object
+      properties:
+        aiAgentOk:
+          type: boolean
+        buyPriceConfigured:
+          type: boolean
+        deviceSn:
+          type: string
+        deviceStatus:
+          type: string
+        executionProgress:
+          type: string
+        guardianEnabled:
+          type: integer
+        guardianStatus:
+          type: integer
+        id:
+          type: string
+        lastStrategyTime:
+          type: integer
+          format: int64
+        message:
+          type: string
+        objectiveMode:
+          type: string
+        personalPreference:
+          description: untyped (Kotlin Object / free-form)
+        plantId:
+          type: string
+        progressRefreshInterval:
+          type: string
+        sellPriceConfigured:
+          type: boolean
+        status:
+          type: integer
+        strategyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiScheduleStrategy'
+        strategyRefreshInterval:
+          type: string
+        topologyOk:
+          type: boolean
+    AiScheduleSetting:
+      type: object
+      properties:
+        objectiveMode:
+          type: string
+        paramSetting:
+          description: untyped (Kotlin Object / free-form)
+        personalPreference:
+          description: untyped (Kotlin Object / free-form)
+    PriceProviderConnect:
+      type: object
+      properties:
+        connectToken:
+          type: string
+        connectWebUrl:
+          type: string
+    PriceProviderConnectStatus:
+      type: object
+      properties:
+        addressJson:
+          type: string
+        connected:
+          type: boolean
+        expired:
+          type: boolean
+        hasLocationId:
+          type: boolean
+        providerName:
+          type: string
+        status:
+          type: string
+        tariffPlan:
+          type: string
+    FinanceLoanApplyPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceLoanApplyPage'
+    FinanceLoanApplyResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceLoanApply'
+    FinanceLoanApplyDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceLoanApplyDetail'
+    FinanceReferrerResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceReferrer'
+    FinanceContactResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceContact'
+    FinanceBankBranchPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceBankBranchPage'
+    FinanceSettlementDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceSettlementDetail'
+    FinanceSettlementOrderPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceSettlementOrderPage'
+    FinanceCommissionPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceCommissionPage'
+    FinanceSettlementTotalResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/FinanceSettlementTotal'
+    PointsApplyDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PointsApplyDetail'
+    PointsApplyPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PointsApplyPage'
+    PointsDevicePointPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PointsDevicePointPage'
+    PointsHomeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PointsHome'
+    PointsMallResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PointsMall'
+    PointsQuestionTypeListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/PointsQuestionType'
+    PointsLevelListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/PointsLevel'
+    PointsTaskListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/PointsTask'
+    EcoExecuteRunResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/EcoExecuteRun'
+    EcoTaskTargetListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/EcoTaskTarget'
+    EcoTaskRunRecordPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/EcoTaskRunRecordPage'
+    EcoTaskPageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/EcoTaskPage'
+    EcoStrategyTemplatePageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/EcoStrategyTemplatePage'
+    EcoStrategyTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/EcoStrategyTemplate'
+    GreenPowerSwitchResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerSwitch'
+    GreenPowerPlanResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerPlan'
+    GreenPowerPriceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerPrice'
+    GreenPowerPredictionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerPrediction'
+    GreenPowerProfitChartResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerProfitChart'
+    GreenPowerIncomeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/GreenPowerIncome'
+    AiScheduleStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/AiScheduleStatus'
+    AiScheduleSettingResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/AiScheduleSetting'
+    AiScheduleDisplayResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/AiScheduleDisplay'
+    PriceProviderConnectResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PriceProviderConnect'
+    PriceProviderConnectStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PriceProviderConnectStatus'
+    EcoAnyDataResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            description: No meaningful payload (Object); usually null
+    PointsStringListResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              type: string

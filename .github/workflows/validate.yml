@@ -1,0 +1,28 @@
+name: Validate OpenAPI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Check openapi.yaml is up to date
+        run: python scripts/build.py --check
+      - name: Validate against the OpenAPI 3.0 schema
+        run: openapi-spec-validator openapi.yaml
+      - name: Reject vendor binaries and obvious secrets
+        run: |
+          if git ls-files | grep -Ei '\.(apk|xapk|aab|dex|jar)$'; then echo "binary files are not allowed"; exit 1; fi
+          if git grep -nE 'BEGIN (RSA )?(PRIVATE|PUBLIC) KEY|MIIE[A-Za-z0-9+/]{20,}'; then echo "key material found"; exit 1; fi

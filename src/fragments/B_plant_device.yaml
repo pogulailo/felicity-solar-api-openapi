@@ -1,0 +1,5501 @@
+paths:
+  /app/plant/create_plant:
+    post:
+      operationId: createPlant
+      summary: Create plant
+      description: Creates a power station; optionally binds devices in the same call.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  description: target user id (owner of the plant; installer creating for a customer)
+                plantName:
+                  type: string
+                installDate:
+                  type: integer
+                  format: int64
+                  description: epoch ms
+                installer:
+                  type: string
+                pictures:
+                  type: string
+                  description: picture file ids/urls
+                countryName:
+                  type: string
+                countryId:
+                  type: string
+                provinceName:
+                  type: string
+                provinceId:
+                  type: string
+                cityName:
+                  type: string
+                cityId:
+                  type: string
+                address:
+                  type: string
+                longitude:
+                  type: string
+                latitude:
+                  type: string
+                timeZone:
+                  type: string
+                  description: sent as businessTimeZone instead when dstFlag=true
+                businessTimeZone:
+                  type: string
+                  description: used instead of timeZone when dstFlag=true
+                electricityPrice:
+                  type: string
+                currency:
+                  type: string
+                tagIds:
+                  type: array
+                  items:
+                    type: string
+                  description: tag ids
+                plantType:
+                  type: string
+                  description: HO household, IND industrial, BUS business, GRO ground
+                onGridType:
+                  type: string
+                  description: GCO, ES, ICOG, MS, PMTB, MI
+                dstFlag:
+                  type: boolean
+                  description: daylight saving time
+                deviceList:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceSaveEntity'
+                  description: devices to bind
+              required:
+              - plantName
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlantResponse'
+  /app/plant/update_plant:
+    post:
+      operationId: updatePlant
+      summary: Update plant
+      description: Edit plant properties.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: plant id
+                plantId:
+                  type: string
+                  description: same as id
+                plantName:
+                  type: string
+                installDate:
+                  type: integer
+                  format: int64
+                  description: epoch ms
+                installer:
+                  type: string
+                pictures:
+                  type: string
+                  description: picture file ids/urls
+                countryName:
+                  type: string
+                countryId:
+                  type: string
+                provinceName:
+                  type: string
+                provinceId:
+                  type: string
+                cityName:
+                  type: string
+                cityId:
+                  type: string
+                address:
+                  type: string
+                longitude:
+                  type: string
+                latitude:
+                  type: string
+                timeZone:
+                  type: string
+                  description: sent as businessTimeZone instead when dstFlag=true
+                businessTimeZone:
+                  type: string
+                  description: used instead of timeZone when dstFlag=true
+                electricityPrice:
+                  type: string
+                currency:
+                  type: string
+                tagIds:
+                  type: array
+                  items:
+                    type: string
+                  description: tag ids
+                plantType:
+                  type: string
+                  description: HO household, IND industrial, BUS business, GRO ground
+                onGridType:
+                  type: string
+                  description: GCO, ES, ICOG, MS, PMTB, MI
+                dstFlag:
+                  type: boolean
+                  description: daylight saving time
+              required:
+              - id
+              - plantName
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePlantResponse'
+  /app/plant/delete_plant:
+    post:
+      operationId: deletePlant
+      summary: Delete plant
+      description: Form-encoded.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: plant id
+              required:
+              - id
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePlantResponse'
+  /app/plant/collect_plant:
+    post:
+      operationId: collectPlant
+      summary: Favourite a plant
+      description: Marks plant as collected (favourite).
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+              required:
+              - plantId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectPlantResponse'
+  /app/plant/un_collect_plant:
+    post:
+      operationId: uncollectPlant
+      summary: Unfavourite a plant
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+              required:
+              - plantId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UncollectPlantResponse'
+  /app/plant/list_plant:
+    post:
+      operationId: listPlants
+      summary: List plants (paged)
+      description: Main plant list. Extra filter keys come from the drawer filter UI. noTotalNumber=true skips count.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                  description: search text
+                noTotalNumber:
+                  type: boolean
+                systemTypes:
+                  type: array
+                  items:
+                    type: integer
+                  description: app sends [1,2]
+                nowTime:
+                  type: string
+                  description: yyyy-MM-dd HH:mm:ss
+                status:
+                  type: string
+                  description: 'plant status filter: ""=all, OL online, O offline, E fault, M not monitored (inferred from
+                    app enums)'
+                plantType:
+                  type: string
+                  description: HO/IND/BUS/GRO or ""
+                onGridType:
+                  type: string
+                  description: GCO/ES/ICOG/MS/PMTB/MI or ""
+                authorized:
+                  type: string
+                  description: '"1"/"0" or "" (authorized-to-me vs own; inferred)'
+                organName:
+                  type: string
+                realName:
+                  type: string
+                tagName:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPlantsResponse'
+  /app/plantAuthorize/plant_authorize_page:
+    post:
+      operationId: listAuthorizedPlants
+      summary: List plants authorized to me
+      description: Plants other users shared with the caller.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                nowTime:
+                  type: string
+                status:
+                  type: string
+                  description: 'plant status filter: ""=all, OL online, O offline, E fault, M not monitored (inferred from
+                    app enums)'
+                plantType:
+                  type: string
+                  description: HO/IND/BUS/GRO or ""
+                onGridType:
+                  type: string
+                  description: GCO/ES/ICOG/MS/PMTB/MI or ""
+                authorized:
+                  type: string
+                  description: '"1"/"0" or "" (authorized-to-me vs own; inferred)'
+                organName:
+                  type: string
+                realName:
+                  type: string
+                tagName:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAuthorizedPlantsResponse'
+  /app/plant/list_plant_transfer:
+    post:
+      operationId: listTransferablePlants
+      summary: List plants available for transfer
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                nowTime:
+                  type: string
+                status:
+                  type: string
+                  description: 'plant status filter: ""=all, OL online, O offline, E fault, M not monitored (inferred from
+                    app enums)'
+                plantType:
+                  type: string
+                  description: HO/IND/BUS/GRO or ""
+                onGridType:
+                  type: string
+                  description: GCO/ES/ICOG/MS/PMTB/MI or ""
+                authorized:
+                  type: string
+                  description: '"1"/"0" or "" (authorized-to-me vs own; inferred)'
+                organName:
+                  type: string
+                realName:
+                  type: string
+                tagName:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTransferablePlantsResponse'
+  /app/plant/list_collect_plant:
+    post:
+      operationId: listCollectedPlants
+      summary: List favourite plants
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                status:
+                  type: string
+                  description: 'plant status filter: ""=all, OL online, O offline, E fault, M not monitored (inferred from
+                    app enums)'
+                plantType:
+                  type: string
+                  description: HO/IND/BUS/GRO or ""
+                onGridType:
+                  type: string
+                  description: GCO/ES/ICOG/MS/PMTB/MI or ""
+                authorized:
+                  type: string
+                  description: '"1"/"0" or "" (authorized-to-me vs own; inferred)'
+                organName:
+                  type: string
+                realName:
+                  type: string
+                tagName:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCollectedPlantsResponse'
+  /app/plant/list_condition_plant:
+    post:
+      operationId: searchPlants
+      summary: Search plants by name
+      description: Used for autocomplete.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantName:
+                  type: string
+                pageSize:
+                  type: integer
+                pageNum:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchPlantsResponse'
+  /app/plant/list_plant_name:
+    post:
+      operationId: listPlantNames
+      summary: List plant names (filter autocomplete)
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantName:
+                  type: string
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPlantNamesResponse'
+  /app/plant/plantDetails:
+    post:
+      operationId: getPlantDetails
+      summary: Plant details and realtime/energy statistics
+      description: Per-plant realtime power and today/month/year/total energy figures, device counts.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: integer
+                  format: int64
+                  description: numeric plant id
+                currentDateStr:
+                  type: string
+                  description: yyyy-MM-dd (client date)
+              required:
+              - plantId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantDetailsResponse'
+  /app/plant/default_plant:
+    get:
+      operationId: getDefaultPlant
+      summary: Get default plant
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DefaultPlantResponse'
+  /app/plant/set_default_plant/{plantId}:
+    post:
+      operationId: setDefaultPlant
+      summary: Set default plant
+      description: Empty form body.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetDefaultPlantResponse'
+  /app/plant/getPlantClimateVo:
+    post:
+      operationId: getPlantClimate
+      summary: Plant weather
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+              required:
+              - plantId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlantClimateResponse'
+  /app/plant/transfer:
+    post:
+      operationId: transferPlants
+      summary: Transfer plants to another user
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: array
+                  items:
+                    type: string
+                  description: plant ids
+                userId:
+                  type: string
+                  description: target user id
+              required:
+              - plantId
+              - userId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferPlantsResponse'
+  /app/plant/currencyIso:
+    get:
+      operationId: listCurrencyIso
+      summary: List currency ISO codes
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyIsoResponse'
+  /app/plant/save_scenario:
+    post:
+      operationId: savePlantScenario
+      summary: Quick-create or rename plant
+      description: Called with plantName(+owner) to create, or plantName+id to rename.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantName:
+                  type: string
+                owner:
+                  type: integer
+                id:
+                  type: string
+                  description: plant id when renaming
+              required:
+              - plantName
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavePlantScenarioResponse'
+  /app/pageData/home_data:
+    post:
+      operationId: getHomeData
+      summary: Home dashboard statistics
+      description: Aggregate counts and energy for the home tab.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataTime:
+                  type: string
+                  description: yyyy-MM-dd HH:mm:ss
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeDataResponse'
+  /app/pageData/window_message:
+    post:
+      operationId: getWindowMessage
+      summary: Popup window message
+      description: Form POST with empty body.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WindowMessageResponse'
+  /app/plantAuthorize/plant_user_authorize_page:
+    post:
+      operationId: listPlantAuthorizedUsers
+      summary: List users authorized on a plant
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                keywords:
+                  type: string
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPlantAuthorizedUsersResponse'
+  /app/plantAuthorize/plant_user_authorize:
+    post:
+      operationId: authorizePlantUser
+      summary: Authorize a user on a plant
+      description: userAuthority value meaning unknown.
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                userId:
+                  type: string
+                userAuthority:
+                  type: integer
+                  description: authority level (values unknown)
+              required:
+              - plantId
+              - userId
+              - userAuthority
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizePlantUserResponse'
+  /app/plantAuthorize/delete_plantAuthorize:
+    post:
+      operationId: deletePlantAuthorization
+      summary: Revoke user authorization
+      description: ''
+      tags:
+      - Plant
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                userId:
+                  type: string
+              required:
+              - plantId
+              - userId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePlantAuthorizationResponse'
+  /app/plants/{plantId}/prices:
+    get:
+      operationId: getPlantPrices
+      summary: Get plant buy/sell price configuration
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPlantPricesResponse'
+  /app/plants/{plantId}/prices/enable:
+    post:
+      operationId: enablePlantPriceMode
+      summary: Enable/disable price mode
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                buyKind:
+                  type: string
+                  description: price kind for buy (single/time-of-use/dynamic; exact strings unknown)
+                sellKind:
+                  type: string
+                enable:
+                  type: boolean
+              required:
+              - enable
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnablePlantPriceModeResponse'
+  /app/plants/{plantId}/prices/status:
+    post:
+      operationId: setPlantPriceStatus
+      summary: Set price config status
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enable:
+                  type: boolean
+                priceConfigId:
+                  type: string
+              required:
+              - enable
+              - priceConfigId
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetPlantPriceStatusResponse'
+  /app/plants/{plantId}/prices/single:
+    post:
+      operationId: setSinglePrice
+      summary: Set single (flat) price
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currency:
+                  type: string
+                category:
+                  type: string
+                  description: buy or sell (inferred)
+                price:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetSinglePriceResponse'
+  /app/plants/{plantId}/prices/{category}/details:
+    get:
+      operationId: getPriceDetails
+      summary: Price configuration details
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: kind
+        in: query
+        required: false
+        description: single / time-of-use / dynamic (inferred)
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPriceDetailsResponse'
+  /app/plants/{plantId}/prices/{category}/templates:
+    get:
+      operationId: listPriceTemplates
+      summary: List time-of-use templates
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPriceTemplatesResponse'
+    post:
+      operationId: savePriceTemplate
+      summary: Create/update time-of-use template
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                  description: present when updating
+                name:
+                  type: string
+                themeColor:
+                  type: string
+                  description: 'app sends #6C5CE7'
+                currency:
+                  type: string
+                slots:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        format: int64
+                      startTime:
+                        type: string
+                      endTime:
+                        type: string
+                      price:
+                        type: string
+                  description: startTime/endTime formatted HH:mm
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavePriceTemplateResponse'
+  /app/plants/{plantId}/prices/{category}/templates/{templateId}:
+    get:
+      operationId: getPriceTemplate
+      summary: Get price template
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: templateId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPriceTemplateResponse'
+    delete:
+      operationId: deletePriceTemplate
+      summary: Delete price template
+      description: ''
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: templateId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePriceTemplateResponse'
+  /app/plants/{plantId}/prices/{category}/time-of-use/calendar:
+    get:
+      operationId: getPriceCalendar
+      summary: Time-of-use calendar
+      description: Template assigned per month/weekday.
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPriceCalendarResponse'
+  /app/plants/{plantId}/prices/{category}/time-of-use/calendar/batch:
+    post:
+      operationId: savePriceCalendarBatch
+      summary: Save calendar (batch)
+      description: Body is a JSON array.
+      tags:
+      - Plant Price
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: category
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/CalendarPriceEntity'
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavePriceCalendarBatchResponse'
+  /app/device/list_device_all_type:
+    post:
+      operationId: listDevices
+      summary: List devices (paged)
+      description: Used with plantId for plant devices, deviceSn/keywords for search.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                systemTypes:
+                  type: array
+                  items:
+                    type: integer
+                  description: app sends [1,2]
+                noTotalNumber:
+                  type: boolean
+                scope:
+                  type: integer
+                  description: 0 = own devices; 1 = used with nowDeviceType (exclusion list)
+                plantId:
+                  type: string
+                deviceType:
+                  type: string
+                  description: ALL or type code
+                deviceSn:
+                  type: string
+                keywords:
+                  type: string
+                nowDeviceType:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDevicesResponse'
+  /app/device/list_condition_device:
+    post:
+      operationId: searchDevices
+      summary: Search devices by SN/model
+      description: 'Two call shapes: (keywords, deviceType, orgCode) -> DeviceSnSearchRootEntity response; (plantId, deviceSn,
+        deviceType=IB, deviceModel) -> SearchSNRootEntity. Response modeled as union of fields.'
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                deviceType:
+                  type: string
+                  description: e.g. IB
+                orgCode:
+                  type: string
+                  description: org code of user (non-admin)
+                plantId:
+                  type: string
+                deviceSn:
+                  type: string
+                deviceModel:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchDevicesResponse'
+  /app/device/save_device:
+    post:
+      operationId: saveDevice
+      summary: Bind device to plant
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                deviceSn:
+                  type: string
+                checkCode:
+                  type: string
+                  description: device verification code
+                alias:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDeviceResponse'
+  /app/device/save_device_batch:
+    post:
+      operationId: saveDeviceBatch
+      summary: Bind several devices
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceList:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceSaveEntity'
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDeviceBatchResponse'
+  /app/device/create_check:
+    post:
+      operationId: createDeviceCheck
+      summary: Pre-check device before binding
+      description: Returns device type info.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                plantId:
+                  type: integer
+                checkCode:
+                  type: string
+              required:
+              - deviceSn
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDeviceCheckResponse'
+  /app/device/delete:
+    post:
+      operationId: deleteDevice
+      summary: Delete device
+      description: Form-encoded.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: device record id
+              required:
+              - id
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDeviceResponse'
+  /app/device/update_device:
+    post:
+      operationId: updateDevice
+      summary: Rename device (alias)
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                alias:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateDeviceResponse'
+  /app/device/get_device_snapshot:
+    post:
+      operationId: getDeviceSnapshot
+      summary: Device realtime snapshot
+      description: Latest values for a device (all fields of the device model).
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                deviceType:
+                  type: string
+                collectorSn:
+                  type: string
+                dateStr:
+                  type: string
+                  description: yyyy-MM-dd
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDeviceSnapshotResponse'
+  /app/device/get_plant_realtime_icon_template_info:
+    post:
+      operationId: getPlantRealtimeIconTemplate
+      summary: Plant realtime icon/template info
+      description: Per-device realtime blocks keyed by icon.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                deviceSn:
+                  type: string
+                icons:
+                  type: array
+                  items:
+                    type: string
+                dateStr:
+                  type: string
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetPlantRealtimeIconTemplateResponse'
+  /app/device/get_energy_flow2:
+    get:
+      operationId: getEnergyFlow
+      summary: Energy flow
+      description: Data is a JSON-encoded string (raw, untyped in app).
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      parameters:
+      - name: plantId
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: deviceSn
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: dataTimeStr
+        in: query
+        required: false
+        description: yyyy-MM-dd
+        schema:
+          type: string
+      - name: connectWebsocket
+        in: query
+        required: false
+        description: '"true"/"false"'
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnergyFlowResponse'
+  /device/get_energy_flow_threshold:
+    get:
+      operationId: getEnergyFlowThreshold
+      summary: Energy flow thresholds
+      description: Path has no /app prefix. Response is raw string.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEnergyFlowThresholdResponse'
+  /device/get_device_model/{deviceSn}:
+    get:
+      operationId: getDeviceModel
+      summary: Get device model by SN
+      description: Path has no /app prefix.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      parameters:
+      - name: deviceSn
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDeviceModelResponse'
+  /app/device/getSelfCheck/result:
+    get:
+      operationId: getSelfCheckResult
+      summary: Self-check result
+      description: Raw string data.
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      parameters:
+      - name: deviceSn
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSelfCheckResultResponse'
+  /app/device/getSelfBuiltRegulation:
+    get:
+      operationId: getSelfBuiltRegulation
+      summary: Self-built grid regulation
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      parameters:
+      - name: deviceSn
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSelfBuiltRegulationResponse'
+  /app/product/page_device_model_list:
+    post:
+      operationId: listDeviceModels
+      summary: List device models
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceType:
+                  type: string
+                deviceModel:
+                  type: string
+                pageSize:
+                  type: integer
+                pageNum:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDeviceModelsResponse'
+  /app/storageRealtimeData/display:
+    post:
+      operationId: getStorageDisplay
+      summary: Classified realtime display data
+      description: ''
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                deviceSn:
+                  type: string
+                timeDimension:
+                  type: string
+                  description: time scale (e.g. day/month/year; exact strings unknown)
+                date:
+                  type: integer
+                  format: int64
+                  description: epoch ms
+                dateStr:
+                  type: string
+                deviceType:
+                  type: string
+                chartType:
+                  type: integer
+                isClassify:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStorageDisplayResponse'
+  /app/storageRealtimeData/chart_storageRealtimeData_mate:
+    post:
+      operationId: getStorageChart
+      summary: Chart series (power / energy statistics)
+      description: Used for device charts (plantId+deviceSn+field) and plant charts (chartDrawingType).
+      tags:
+      - Device
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plantId:
+                  type: string
+                deviceSn:
+                  type: string
+                deviceType:
+                  type: string
+                timeDimension:
+                  type: string
+                date:
+                  type: integer
+                  format: int64
+                dateStr:
+                  type: string
+                chartScope:
+                  type: string
+                chartScopeType:
+                  type: string
+                chartType:
+                  type: integer
+                chartDrawingType:
+                  type: string
+                field:
+                  type: array
+                  items:
+                    type: string
+                  description: series field names
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetStorageChartResponse'
+  /app/device/warring/group:
+    post:
+      operationId: listWarningGroups
+      summary: List device alarms
+      description: ''
+      tags:
+      - Device Warning
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                plantId:
+                  type: string
+                keywords:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListWarningGroupsResponse'
+  /app/deviceWarning/warning_count:
+    get:
+      operationId: getWarningCount
+      summary: Alarm count for a device
+      description: ''
+      tags:
+      - Device Warning
+      security:
+      - ApiToken: []
+      parameters:
+      - name: deviceSn
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      - name: warnTypes
+        in: query
+        required: false
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWarningCountResponse'
+  /app/deviceWarning/update_warn_status:
+    post:
+      operationId: updateWarningStatus
+      summary: Update alarm handling status
+      description: ''
+      tags:
+      - Device Warning
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                status:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateWarningStatusResponse'
+  /app/deviceCommand/create_setting_command:
+    post:
+      operationId: createSettingCommand
+      summary: Send parameter settings to a device
+      description: 'Core settings call. deviceCommands items: fieldName (parameter key), groupId, useType, paramType (1 observed
+        for plain), dataHandlerType, fieldValue (number; bit-fields are merged client side). realContentParam lists the fieldNames.
+        The app also sends fieldName=auten fieldValue=1 as an authentication/unlock command. Poll /deviceCommand/get_device_command_status
+        with returned id.'
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                timestamp:
+                  type: integer
+                  format: int64
+                  description: epoch ms
+                timeZone:
+                  type: string
+                oldVersion:
+                  type: string
+                  description: '"1"'
+                useType:
+                  type: integer
+                groupId:
+                  type: integer
+                version:
+                  type: string
+                  description: app version (auten call)
+                realContentParam:
+                  type: array
+                  items:
+                    type: string
+                deviceCommands:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fieldName:
+                        type: string
+                      groupId:
+                        type: integer
+                      useType:
+                        type: integer
+                      paramType:
+                        type: integer
+                      dataHandlerType:
+                        type: integer
+                      fieldValue:
+                        description: number or string
+              required:
+              - deviceSn
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSettingCommandResponse'
+  /deviceCommand/get_device_command_status:
+    post:
+      operationId: getDeviceCommandStatus
+      summary: Poll command status
+      description: ''
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: command id from create_setting_command
+              required:
+              - id
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDeviceCommandStatusResponse'
+  /app/deviceCommand/read_data_form_device:
+    post:
+      operationId: readDataFromDevice
+      summary: Request device to report parameters
+      description: 'operation: 2 = read settings (typed response), 6 = other read (used from plant page). Meaning inferred.'
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                operation:
+                  type: integer
+                  description: 2 or 6
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadDataFromDeviceResponse'
+  /app/deviceCommand/get_command_setting_original_value:
+    post:
+      operationId: getCommandSettingOriginalValue
+      summary: Get current parameter values
+      description: Raw string data (JSON).
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                timeZone:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCommandSettingOriginalValueResponse'
+  /app/deviceCommand/set_device_time:
+    post:
+      operationId: setDeviceTime
+      summary: Set device clock/time zone
+      description: password RSA-encrypted.
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                password:
+                  type: string
+                  description: RSA encrypted
+                timeZone:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetDeviceTimeResponse'
+  /app/deviceCommand/set_report_frequency:
+    post:
+      operationId: setReportFrequency
+      summary: Set data report frequency
+      description: ''
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                password:
+                  type: string
+                timeZone:
+                  type: string
+                reportFreq:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetReportFrequencyResponse'
+  /app/deviceCommand/check_set_command_password:
+    post:
+      operationId: checkSetCommandPassword
+      summary: Verify settings password
+      description: ''
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: RSA encrypted
+                version:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckSetCommandPasswordResponse'
+  /app/deviceParamCopy/copyParamConfig:
+    post:
+      operationId: copyParamConfig
+      summary: Save device parameters as a template file
+      description: ''
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileName:
+                  type: string
+                remarks:
+                  type: string
+                deviceSn:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CopyParamConfigResponse'
+  /app/deviceParamCopy/importParamConfig:
+    post:
+      operationId: importParamConfig
+      summary: Import parameters to device
+      description: mode 1 = from another device (otherDeviceSn), mode 2 = from saved file (id). Client timeout 180s.
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                otherDeviceSn:
+                  type: string
+                id:
+                  type: string
+                mode:
+                  type: integer
+                  description: 1 or 2
+                code:
+                  type: string
+                  description: check code
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportParamConfigResponse'
+  /app/deviceParamCopy/getSameSubTypeDeviceList:
+    post:
+      operationId: listParamCopySources
+      summary: List devices/files to copy params from
+      description: ''
+      tags:
+      - Device Command
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                searchContent:
+                  type: string
+                mode:
+                  type: integer
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListParamCopySourcesResponse'
+  /app/deviceUpdate/get_update_log:
+    post:
+      operationId: listDeviceUpdateLogs
+      summary: Device firmware update log
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceSn:
+                  type: string
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDeviceUpdateLogsResponse'
+  /app/updatePackageCombinat/list_updatePackageCombinat:
+    post:
+      operationId: listUpdatePackages
+      summary: List update package combinations
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                userId:
+                  type: string
+                keywords:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListUpdatePackagesResponse'
+  /app/updatePackageCombinat/updatePackageCombinat_read:
+    post:
+      operationId: markUpdatePackageRead
+      summary: Mark update package read
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkUpdatePackageReadResponse'
+  /app/packageCombinatUser/list_packageCombinatUser:
+    post:
+      operationId: listPackageUsers
+      summary: List users assigned to a package
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+                updatePackageCombinatId:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListPackageUsersResponse'
+  /app/packageCombinatUser/save_packageCombinatUser:
+    post:
+      operationId: savePackageUsers
+      summary: Assign users to package
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updatePackageCombinatId:
+                  type: string
+                userId:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavePackageUsersResponse'
+  /app/packageCombinatUser/delete:
+    post:
+      operationId: deletePackageUser
+      summary: Remove user from package
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updatePackageCombinatId:
+                  type: string
+                userId:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeletePackageUserResponse'
+  /app/updateBluetoothLog/list_updateBluetoothLog:
+    post:
+      operationId: listBluetoothUpdateLogs
+      summary: List Bluetooth update logs
+      description: Extra filter keys come from a filter drawer; unknown.
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+                keywords:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListBluetoothUpdateLogsResponse'
+  /app/updateBluetoothLog/save_updateBluetoothLog:
+    post:
+      operationId: saveBluetoothUpdateLog
+      summary: Upload Bluetooth update log
+      description: Body built by caller map; exact keys not fully traced (corresponds to BleManagerHistoryEntity / UpdateBluetoothLogDetail
+        fields).
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                updatePackageCombinatId:
+                  type: string
+                result:
+                  type: string
+                updateBluetoothLogDetails:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/UpdateBluetoothLogDetail'
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveBluetoothUpdateLogResponse'
+  /app/updateBluetoothLog/blueTooth/log/deviceSN:
+    post:
+      operationId: searchBluetoothLogDeviceSn
+      summary: Search device SN in BLE logs
+      description: ''
+      tags:
+      - Firmware Update
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keywords:
+                  type: string
+                pageNum:
+                  type: integer
+                pageSize:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchBluetoothLogDeviceSnResponse'
+  /app/tag/list_tag:
+    post:
+      operationId: listTags
+      summary: List tags (paged)
+      description: ''
+      tags:
+      - Tag
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                keywords:
+                  type: string
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTagsResponse'
+  /app/tag/list_tag_all:
+    post:
+      operationId: listAllTags
+      summary: List all tags
+      description: ''
+      tags:
+      - Tag
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListAllTagsResponse'
+  /app/tag/list_tag_name:
+    post:
+      operationId: listTagNames
+      summary: List tag names
+      description: ''
+      tags:
+      - Tag
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTagNamesResponse'
+  /app/tag/save_tag:
+    post:
+      operationId: saveTag
+      summary: Create tag
+      description: ''
+      tags:
+      - Tag
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tagName:
+                  type: string
+              required:
+              - tagName
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveTagResponse'
+  /app/tag/delete_tag/{tagId}:
+    get:
+      operationId: deleteTag
+      summary: Delete tag
+      description: Uses GET.
+      tags:
+      - Tag
+      security:
+      - ApiToken: []
+      parameters:
+      - name: tagId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTagResponse'
+  /app/productManual/productManual_details:
+    post:
+      operationId: getProductManualDetails
+      summary: Product manual details
+      description: ''
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                optionId:
+                  type: string
+                optionChildId:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductManualDetailsResponse'
+  /app/productIntroduce/getProductIntroduceDetail:
+    post:
+      operationId: getProductIntroduceDetail
+      summary: Product introduction detail / Wi-Fi module video
+      description: 'Two call shapes: (classId, deviceType, deviceSn, dataType) -> ProductMainEntity; (dataType=3, className=ModuleWiFiVideo)
+        -> VideoListEntity. Response is union.'
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId:
+                  type: string
+                deviceType:
+                  type: string
+                deviceSn:
+                  type: string
+                dataType:
+                  type: integer
+                className:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductIntroduceDetailResponse'
+  /app/productIntroduce/list_productIntroduce:
+    post:
+      operationId: listProductIntroduce
+      summary: List product videos
+      description: ''
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId:
+                  type: string
+                deviceType:
+                  type: string
+                deviceSn:
+                  type: string
+                dataType:
+                  type: integer
+                  description: '3'
+                pageNum:
+                  type: integer
+                  description: 1-based page number
+                pageSize:
+                  type: integer
+                  description: page size (app uses 10)
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProductIntroduceResponse'
+  /app/productUpdateReminder/read_product:
+    post:
+      operationId: readProductUpdate
+      summary: Mark product update read
+      description: ''
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId:
+                  type: string
+                eventId:
+                  type: string
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadProductUpdateResponse'
+  /app/productUpdateReminder/get_subscription:
+    post:
+      operationId: getProductUpdateSubscription
+      summary: Get update-reminder subscription
+      description: Empty body.
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductUpdateSubscriptionResponse'
+  /app/productUpdateReminder/update_subscription:
+    post:
+      operationId: updateProductUpdateSubscription
+      summary: Update subscription
+      description: ''
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                receiveEmail:
+                  type: string
+                subscribeFlag:
+                  type: integer
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateProductUpdateSubscriptionResponse'
+  /productUpdateReminder/get_unread_status:
+    post:
+      operationId: getProductUpdateUnreadStatus
+      summary: Unread product update flag
+      description: Path has no /app prefix.
+      tags:
+      - Product Info
+      security:
+      - ApiToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: {}
+      responses:
+        '200':
+          description: Envelope; code 200 = success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetProductUpdateUnreadStatusResponse'
+components:
+  schemas:
+    PlantInfo:
+      type: object
+      properties:
+        address:
+          type: string
+        avgPrice:
+          type: string
+        avgSoc:
+          type: string
+        businessTimeZone:
+          type: string
+        cityId:
+          type: string
+        cityName:
+          type: string
+        co2Less:
+          type: string
+        countryId:
+          type: string
+        countryName:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        currency:
+          type: string
+        currentPower:
+          type: string
+        currentPowerUnit:
+          type: string
+        custodian:
+          type: string
+        delFlag:
+          type: string
+        dstFlag:
+          type: string
+        dstFlagDisplay:
+          type: string
+        electricityPrice:
+          type: string
+        email:
+          type: string
+        emailDesensitization:
+          type: string
+        genPrice:
+          type: string
+        id:
+          type: string
+        installDate:
+          type: integer
+          format: int64
+        installDateStr:
+          type: string
+        installer:
+          type: string
+        isCollected:
+          type: boolean
+        latitude:
+          type: string
+        longitude:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        onGridType:
+          type: string
+        owner:
+          type: string
+        ownerName:
+          type: string
+        peakPrice:
+          type: string
+        phone:
+          type: string
+        phoneDesensitization:
+          type: string
+        phoneZone:
+          type: string
+        pictures:
+          type: string
+        plantAddress:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+        plantType:
+          type: string
+        plantUserAuthority:
+          type: string
+        provinceId:
+          type: string
+        provinceName:
+          type: string
+        pvPower:
+          type: string
+        pvPowerUnit:
+          type: string
+        reduceDeforestation:
+          type: string
+        spareCoal:
+          type: string
+        status:
+          type: string
+        systemType:
+          type: integer
+        tagListVOS:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantTag'
+        timeZone:
+          type: string
+        todayEnergy:
+          type: string
+        totalDevice:
+          type: string
+        totalEnergy:
+          type: string
+        totalInstalledCapacity:
+          type: string
+        totalOutPower:
+          type: string
+        totalOutPowerUnit:
+          type: string
+        totalPower:
+          type: string
+        troughPrice:
+          type: string
+    PlantTag:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        tagName:
+          type: string
+    DeviceSaveEntity:
+      type: object
+      properties:
+        alias:
+          type: string
+        checkCode:
+          type: string
+        deviceSn:
+          type: string
+        plantId:
+          type: string
+    CreatePlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantInfo'
+    UpdatePlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantInfo'
+    DeletePlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    CollectPlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    UncollectPlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    PlantPage:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/DataPlantEntity'
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantInfo'
+    DataPlantEntity:
+      type: object
+      properties:
+        existDataPlant:
+          type: string
+    ListPlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantPage'
+    ListAuthorizedPlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantPage'
+    ListTransferablePlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantPage'
+    CollectRootListEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantInfo'
+        totalPage:
+          type: integer
+    ListCollectedPlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/CollectRootListEntity'
+    PlantSearchRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        data: {}
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantSearchEntity'
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPage:
+          type: integer
+    PlantSearchEntity:
+      type: object
+      properties:
+        id:
+          type: string
+        plantName:
+          type: string
+    SearchPlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantSearchRootEntity'
+    TagListBaseEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    ListPlantNamesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TagListBaseEntity'
+    PlantDetails:
+      type: object
+      properties:
+        acInputPower:
+          type: string
+        accPv:
+          type: string
+        accPvIncome:
+          type: string
+        accPvUnit:
+          type: string
+        address:
+          type: string
+        batteryCapacity:
+          type: string
+        businessTimeZone:
+          type: string
+        buttonAddAuthority:
+          type: string
+        buttonAuthorityTag:
+          type: array
+          items:
+            type: string
+        chargePower:
+          type: string
+        cityId:
+          type: string
+        cityName:
+          type: string
+        connectWebsocket:
+          type: string
+        countryId:
+          type: string
+        countryName:
+          type: string
+        createTime:
+          type: string
+        createTimeStr:
+          type: string
+        createUserId:
+          type: string
+        createUserName:
+          type: string
+        currency:
+          type: string
+        custodian:
+          type: string
+        deviceList:
+          type: array
+          items:
+            type: string
+        deviceListMap:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceListMapEntity'
+        deviceListView:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceView'
+        deviceSns:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceListMapEntity'
+        dstFlag:
+          type: string
+        dstFlagDisplay:
+          type: string
+        electricityPrice:
+          type: string
+        email:
+          type: string
+        errorEquipmentQuantity:
+          type: string
+        feedPower:
+          type: string
+        installDate:
+          type: integer
+          format: int64
+        installDateStr:
+          type: string
+        installer:
+          type: string
+        isOwnerCollect:
+          type: string
+        latitude:
+          type: string
+        loadPower:
+          type: string
+        longitude:
+          type: string
+        modifyTime:
+          type: string
+        modifyTimeStr:
+          type: string
+        monitorEquipmentQuantity:
+          type: string
+        monthPv:
+          type: string
+        monthPvIncome:
+          type: string
+        monthPvUnit:
+          type: string
+        normalEquipmentRate:
+          type: string
+        normalOperationEquipmentQuantity:
+          type: string
+        normalOperationRateOfEquipment:
+          type: string
+        notMonitorEquipmentQuantity:
+          type: string
+        offLineEquipmentQuantity:
+          type: string
+        onGridType:
+          type: string
+        onLineEquipmentQuantity:
+          type: string
+        ownerName:
+          type: string
+        phone:
+          type: string
+        phoneZone:
+          type: string
+        pictures:
+          type: string
+        plantId:
+          type: string
+        plantLocation:
+          type: string
+        plantName:
+          type: string
+        plantType:
+          type: string
+        plantUserAuthority:
+          type: string
+        provinceId:
+          type: string
+        provinceName:
+          type: string
+        pvPower:
+          type: string
+        pvTodayIncome:
+          type: string
+        realtimeSocList:
+          type: array
+          items:
+            type: string
+        revenueUnit:
+          type: string
+        status:
+          type: string
+        supportFeedOutput:
+          type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantTag'
+        timeList:
+          type: array
+          items:
+            type: string
+        timeZone:
+          type: string
+        todayAcInputKwh:
+          type: string
+        todayAcInputKwhUnit:
+          type: string
+        todayBatteryCharging:
+          type: string
+        todayBatteryChargingUnit:
+          type: string
+        todayBatteryDischarge:
+          type: string
+        todayBatteryDischargeUnit:
+          type: string
+        todayCharge:
+          type: string
+        todayChargeUnit:
+          type: string
+        todayDischarge:
+          type: string
+        todayDischargeUnit:
+          type: string
+        todayFeedKwh:
+          type: string
+        todayFeedOutput:
+          type: string
+        todayFeedOutputUnit:
+          type: string
+        todayGridInput:
+          type: string
+        todayGridInputUnit:
+          type: string
+        todayLoad:
+          type: string
+        todayLoadConsumptionKwh:
+          type: string
+        todayLoadConsumptionKwhUnit:
+          type: string
+        todayLoadUnit:
+          type: string
+        todayPv:
+          type: string
+        todayPvOutputKwh:
+          type: string
+        todayPvOutputKwhUnit:
+          type: string
+        todayPvOwner:
+          type: string
+        todayPvOwnerUnit:
+          type: string
+        todayPvRevenue:
+          type: string
+        todayPvUnit:
+          type: string
+        totalAcInputKwh:
+          type: string
+        totalAcInputKwhUnit:
+          type: string
+        totalCharge:
+          type: string
+        totalCo2Less:
+          type: string
+        totalCo2LessUnit:
+          type: string
+        totalDischarge:
+          type: string
+        totalEquipmentQuantity:
+          type: string
+        totalFeedKwh:
+          type: string
+        totalInstalledCapacity:
+          type: string
+        totalLoadConsumptionKwh:
+          type: string
+        totalLoadConsumptionKwhUnit:
+          type: string
+        totalPvOutputKwh:
+          type: string
+        totalPvOutputKwhUnit:
+          type: string
+        totalPvRevenue:
+          type: string
+        totalReduceDeforestation:
+          type: string
+        totalReduceDeforestationUnit:
+          type: string
+        totalSpareCoal:
+          type: string
+        totalSpareCoalUnit:
+          type: string
+        yearPv:
+          type: string
+        yearPvIncome:
+          type: string
+        yearPvUnit:
+          type: string
+    DeviceListMapEntity:
+      type: object
+      properties:
+        alias:
+          type: string
+        collectorSn:
+          type: string
+        connectWebsocket:
+          type: string
+        deviceSn:
+          type: string
+        deviceType:
+          type: string
+        hasMaster:
+          type: string
+        status:
+          type: string
+    DeviceView:
+      type: object
+      properties:
+        deviceSn:
+          type: string
+    PlantDetailsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantDetails'
+    DefaultPlantEntity:
+      type: object
+      properties:
+        plantId:
+          type: string
+        plantName:
+          type: string
+        status:
+          type: string
+        systemType:
+          type: integer
+    DefaultPlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DefaultPlantEntity'
+    SetDefaultPlantResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ClimateEntity:
+      type: object
+      properties:
+        authorize:
+          type: string
+        cloudCover:
+          type: string
+        humidity:
+          type: string
+        icon:
+          type: string
+        imgUrl:
+          type: string
+        nowTemp:
+          type: string
+        phrase:
+          type: string
+        phraseImg:
+          type: string
+        sunrise:
+          type: string
+        sunset:
+          type: string
+        temperature:
+          type: string
+        temperatureUnit:
+          type: string
+        windSpeed:
+          type: string
+    PlantClimateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ClimateEntity'
+    TransferPlantsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    CurrencyIsoResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              type: string
+    SavePlantScenarioResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantInfo'
+    NavCardHomeEntity:
+      type: object
+      properties:
+        accPv:
+          type: string
+        accPvUnit:
+          type: string
+        bpCount:
+          type: string
+        coCount:
+          type: string
+        deviceCount:
+          type: string
+        eplantCount:
+          type: string
+        faultDeviceCount:
+          type: string
+        faultInvCount:
+          type: string
+        invCount:
+          type: string
+        lowerLevelBusCount:
+          type: string
+        monthPv:
+          type: string
+        monthPvUnit:
+          type: string
+        mplantCount:
+          type: string
+        nplantCount:
+          type: string
+        nrDeviceCount:
+          type: string
+        nrInvCount:
+          type: string
+        offDeviceCount:
+          type: string
+        offInvCount:
+          type: string
+        onlineDeviceCount:
+          type: string
+        onlineInvCount:
+          type: string
+        oplantCount:
+          type: string
+        plantCount:
+          type: string
+        pvPowerRate:
+          type: string
+        pvTotalPower:
+          type: string
+        pvTotalPowerUnit:
+          type: string
+        ratedPower:
+          type: string
+        ratedPowerUnit:
+          type: string
+        terminalUserCount:
+          type: string
+        todayPv:
+          type: string
+        todayPvUnit:
+          type: string
+        totalCo2Less:
+          type: string
+        totalCo2LessUnit:
+          type: string
+        totalReduceDeforestation:
+          type: string
+        totalReduceDeforestationUnit:
+          type: string
+        totalSpareCoal:
+          type: string
+        totalSpareCoalUnit:
+          type: string
+        workOrderInFollowCount:
+          type: string
+        workOrderNoDownCount:
+          type: string
+        workOrderUnCount:
+          type: string
+        workOrderUnValidateCount:
+          type: string
+        workOrderWaitedEvaluatedCount:
+          type: string
+        yearPv:
+          type: string
+        yearPvUnit:
+          type: string
+    HomeDataResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/NavCardHomeEntity'
+    WindowOpenRootEntity:
+      type: object
+      properties:
+        activityType:
+          type: string
+        dialogTitle:
+          type: string
+        highLightText:
+          type: array
+          items:
+            type: string
+        isOpenTestPaper:
+          type: string
+        isOpenWindow:
+          type: string
+        message:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+    WindowMessageResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/WindowOpenRootEntity'
+    TerminalUserRootListEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TerminalUserListEntity'
+        totalPage:
+          type: integer
+    TerminalUserListEntity:
+      type: object
+      properties:
+        countryId:
+          type: string
+        countryName:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        email:
+          type: string
+        emailDesensitization:
+          type: string
+        headImg:
+          type: string
+        id:
+          type: string
+        lastLoginTime:
+          type: integer
+          format: int64
+        orgNames:
+          type: string
+        phone:
+          type: string
+        phoneDesensitization:
+          type: string
+        phoneZone:
+          type: string
+        realName:
+          type: string
+        userAuthority:
+          type: string
+        userId:
+          type: string
+    ListPlantAuthorizedUsersResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserRootListEntity'
+    AuthorizePlantUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserListEntity'
+    DeletePlantAuthorizationResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    PlantPriceModeEntity:
+      type: object
+      properties:
+        buy:
+          $ref: '#/components/schemas/PlantPriceModeCatagoryEntity'
+        sell:
+          $ref: '#/components/schemas/PlantPriceModeCatagoryEntity'
+    PlantPriceModeCatagoryEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        dynamic:
+          $ref: '#/components/schemas/PriceDynamicEntity'
+        single:
+          $ref: '#/components/schemas/PriceSingleEntity'
+        timeOfUse:
+          $ref: '#/components/schemas/PriceTimeOfUserEntity'
+    PriceDynamicEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        currency:
+          type: string
+        dynamic:
+          type: boolean
+        kind:
+          type: string
+        modifyTime:
+          type: string
+        params:
+          $ref: '#/components/schemas/Effective'
+        plantId:
+          type: string
+        priceConfigId:
+          type: string
+        status:
+          type: string
+        unit:
+          type: string
+    Effective:
+      type: object
+      properties:
+        connectStatus:
+          type: string
+        connectionStatus:
+          type: string
+        hours:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceHour'
+        provider:
+          type: string
+        syncedAt:
+          type: integer
+          format: int64
+        tariffPlan:
+          type: string
+    PriceHour:
+      type: object
+      properties:
+        buy:
+          type: string
+        h:
+          type: integer
+        sell:
+          type: string
+    PriceSingleEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        currency:
+          type: string
+        dynamic:
+          type: boolean
+        kind:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        params:
+          $ref: '#/components/schemas/PriceSinglePriceEntity'
+        plantId:
+          type: string
+        priceConfigId:
+          type: string
+        status:
+          type: string
+        unit:
+          type: string
+    PriceSinglePriceEntity:
+      type: object
+      properties:
+        price:
+          type: string
+    PriceTimeOfUserEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        currency:
+          type: string
+        dynamic:
+          type: boolean
+        kind:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        params:
+          $ref: '#/components/schemas/PriceTimeOfUserPriceEntity'
+        plantId:
+          type: string
+        priceConfigId:
+          type: string
+        status:
+          type: string
+        unit:
+          type: string
+    PriceTimeOfUserPriceEntity:
+      type: object
+      properties:
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceTimeSlotEntity'
+        templateId:
+          type: string
+        templateName:
+          type: string
+    PriceTimeSlotEntity:
+      type: object
+      properties:
+        end:
+          type: string
+        price:
+          type: string
+        start:
+          type: string
+    GetPlantPricesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantPriceModeEntity'
+    EnablePlantPriceModeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantPriceModeEntity'
+    PriceStatusEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        currency:
+          type: string
+        dataScope:
+          type: string
+        dataScopeUserId:
+          type: string
+        delFlag:
+          type: boolean
+        id:
+          type: string
+        kind:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        otherUserId:
+          type: string
+        plantId:
+          type: string
+        snapshot:
+          type: string
+        status:
+          type: string
+        unit:
+          type: string
+    SetPlantPriceStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PriceStatusEntity'
+    SetSinglePriceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ElectricityPriceDetailEntity:
+      type: object
+      properties:
+        category:
+          type: string
+        currency:
+          type: string
+        dynamic:
+          type: boolean
+        kind:
+          type: string
+        modifyTime:
+          type: string
+        params:
+          $ref: '#/components/schemas/Effective'
+        plantId:
+          type: string
+        priceConfigId:
+          type: string
+        status:
+          type: string
+        unit:
+          type: string
+    GetPriceDetailsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ElectricityPriceDetailEntity'
+    PriceModeEntity:
+      type: object
+      properties:
+        currency:
+          type: string
+        id:
+          type: string
+        maxPrice:
+          type: string
+        minPrice:
+          type: string
+        name:
+          type: string
+        slots:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceModeTimeSlotEntity'
+        themeColor:
+          type: string
+        unit:
+          type: string
+    PriceModeTimeSlotEntity:
+      type: object
+      properties:
+        endMinutes:
+          type: integer
+        endTime:
+          type: string
+        expanded:
+          type: boolean
+        id:
+          type: integer
+          format: int64
+        price:
+          type: string
+        startMinutes:
+          type: integer
+        startTime:
+          type: string
+    ListPriceTemplatesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/PriceModeEntity'
+    SavePriceTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    GetPriceTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PriceModeEntity'
+    DeletePriceTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+    CalendarPriceEntity:
+      type: object
+      properties:
+        month:
+          type: integer
+        templateId:
+          type: string
+        weekday:
+          type: integer
+    GetPriceCalendarResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/CalendarPriceEntity'
+    SavePriceCalendarBatchResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    DevicePage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceInfo'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    DeviceInfo:
+      type: object
+      properties:
+        acTtlInpower:
+          type: string
+        alias:
+          type: string
+        appMo:
+          type: string
+        batCount:
+          type: string
+        batMod:
+          type: string
+        batTy:
+          type: string
+        battCapacity:
+          type: string
+        battSoc:
+          type: string
+        batteryCapacity:
+          type: string
+        bfen:
+          type: string
+        bligEn:
+          type: string
+        bmsCommuQuantity:
+          type: string
+        bmsFlag:
+          type: string
+        bmsPower:
+          type: string
+        bmsPowerUnit:
+          type: string
+        bmslccurr:
+          type: string
+        bmsldcurr:
+          type: string
+        buttonAuthorityTag:
+          type: array
+          items:
+            type: string
+        buzEn:
+          type: string
+        chargingPower:
+          type: string
+        collectorSn:
+          type: string
+        controlVersion:
+          type: string
+        controlVersion2:
+          type: string
+        cspri:
+          type: string
+        ctAcTtlInPower:
+          type: string
+        ctAcTtlInPowerUnit:
+          type: string
+        ctVersion:
+          type: string
+        currElectric:
+          type: string
+        currVoltage:
+          type: string
+        currentPower:
+          type: string
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+        deviceType:
+          type: string
+        disPlayDataInfo:
+          type: string
+        displayVersion:
+          type: string
+        ebatCharToday:
+          type: string
+        ebatDisCharToday:
+          type: string
+        electricityMeterLink:
+          type: string
+        emsCapacity:
+          type: string
+        emsCurrent:
+          type: string
+        emsPower:
+          type: string
+        emsSoc:
+          type: string
+        emsSoh:
+          type: string
+        emsVoltage:
+          type: string
+        energy:
+          type: string
+        energyUnit:
+          type: string
+        estore:
+          type: string
+        failCode:
+          type: string
+        firmwareVersion:
+          type: string
+        gpoL:
+          type: string
+        gpunb:
+          type: string
+        groupFlag:
+          type: string
+        hasMaster:
+          type: string
+        hasMater:
+          type: string
+        hopeState:
+          type: integer
+        hopeStateStr:
+          type: string
+        hopeStateTips:
+          type: string
+        id:
+          type: string
+        invDeviceSn:
+          type: string
+        isAgain:
+          type: string
+        isOwnerDevice:
+          type: string
+        mbFree:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyTimeStr:
+          type: string
+        moduleSn:
+          type: string
+        moduleVersion:
+          type: string
+        mpptBA:
+          type: string
+        ol2Byp:
+          type: string
+        olrst:
+          type: string
+        onGridType:
+          type: string
+        operM:
+          type: string
+        ospri:
+          type: string
+        otrst:
+          type: string
+        outMod:
+          type: string
+        ownerName:
+          type: string
+        parStatus:
+          type: string
+        parallelNum:
+          type: string
+        parentId:
+          type: string
+        plantAddress:
+          type: string
+        plantCreateTime:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+        plantUserAuthority:
+          type: string
+        productTypeEnum:
+          type: string
+        pvPower:
+          type: string
+        pvTotalPower:
+          type: string
+        pvTotalPowerUnit:
+          type: string
+        ratedPower:
+          type: string
+        reportFreq:
+          type: string
+        ronoff:
+          type: string
+        socConvertion:
+          type: string
+        socFree:
+          type: string
+        stand:
+          type: string
+        status:
+          type: string
+        subType:
+          type: string
+        subTypeCode:
+          type: string
+        timeZone:
+          type: string
+        totalEnergy:
+          type: string
+        totalEnergyUnit:
+          type: string
+        totalPower:
+          type: string
+        type:
+          type: string
+        typeCode:
+          type: string
+        warningCount:
+          type: string
+        wifiSignal:
+          type: string
+        workMode:
+          type: string
+    ListDevicesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DevicePage'
+    DeviceSnSearchRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceSnSearchEntity'
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPage:
+          type: integer
+    DeviceSnSearchEntity:
+      type: object
+      properties:
+        alias:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+    SearchSNRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchSNListEntity'
+        pageSize:
+          type: integer
+        total:
+          type: integer
+        totalPage:
+          type: integer
+    SearchSNListEntity:
+      type: object
+      properties:
+        alias:
+          type: string
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+        status:
+          type: string
+    SearchDevicesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            oneOf:
+            - $ref: '#/components/schemas/DeviceSnSearchRootEntity'
+            - $ref: '#/components/schemas/SearchSNRootEntity'
+    SaveDeviceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    SaveDeviceBatchResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    DeviceCreateCheckEntity:
+      type: object
+      properties:
+        deviceModel:
+          type: string
+        deviceType:
+          type: string
+        productCode:
+          type: string
+        subType:
+          type: string
+        systemType:
+          type: integer
+        type:
+          type: string
+    CreateDeviceCheckResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceCreateCheckEntity'
+    DeleteDeviceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    UpdateDeviceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    GetDeviceSnapshotResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceInfo'
+    TemplateIconRootEntity:
+      type: object
+      properties:
+        blockLayoutFlag:
+          type: boolean
+        currentPage:
+          type: string
+        data:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateDataEntity'
+        icon:
+          type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    TemplateDataEntity:
+      type: object
+      properties:
+        alias:
+          type: string
+        blockLayoutFlag:
+          type: boolean
+        deviceSn:
+          type: string
+        deviceType:
+          type: string
+        invDeviceSn:
+          type: string
+        status:
+          type: string
+        templateBlockVO:
+          $ref: '#/components/schemas/TemplateBlockEntity'
+        typeCode:
+          type: string
+    TemplateBlockEntity:
+      type: object
+      properties:
+        name:
+          type: string
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TemplateTableEntity'
+        templateId:
+          type: integer
+          format: int64
+    TemplateTableEntity:
+      type: object
+      properties:
+        horizontalHeader:
+          type: array
+          items:
+            type: string
+        points:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        structuralType:
+          type: integer
+        tableVerticalHeader:
+          type: array
+          items:
+            type: string
+    GetPlantRealtimeIconTemplateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/TemplateIconRootEntity'
+    GetEnergyFlowResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+    GetEnergyFlowThresholdResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+    DeviceModelEntity:
+      type: object
+      properties:
+        deviceModel:
+          type: string
+    GetDeviceModelResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceModelEntity'
+    GetSelfCheckResultResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+    SelfBuiltRegulationEntity:
+      type: object
+      properties:
+        commVer:
+          type: integer
+        createTime:
+          type: integer
+          format: int64
+        date: {}
+        dateTime:
+          type: integer
+          format: int64
+        devSN:
+          type: string
+        fgov: {}
+        lastResult:
+          type: string
+        result:
+          type: integer
+        selfStatus:
+          type: string
+        sglf: {}
+        sglv: {}
+        sgof: {}
+        sgov: {}
+        status:
+          type: string
+        tgov: {}
+        type:
+          type: integer
+        wifiSN: {}
+    GetSelfBuiltRegulationResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/SelfBuiltRegulationEntity'
+    DeviceSearchRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        data: {}
+        dataList:
+          type: array
+          items:
+            type: string
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    ListDeviceModelsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceSearchRootEntity'
+    DisplayClassifyRootEntity:
+      type: object
+      properties:
+        displayClassifyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DisplayClassifyEntity'
+    DisplayClassifyEntity:
+      type: object
+      properties:
+        displayDataList:
+          type: array
+          items: {}
+        name: {}
+    GetStorageDisplayResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DisplayClassifyRootEntity'
+    ChartData:
+      type: object
+      properties:
+        chartDrawingType:
+          type: string
+        dataTime:
+          type: array
+          items:
+            type: string
+        header:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChartHeader'
+        storageMateDTOS:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChartSeries'
+    ChartHeader:
+      type: object
+      properties:
+        chose:
+          type: string
+        i18nName:
+          type: string
+        label:
+          type: string
+        name:
+          type: string
+        sort:
+          type: integer
+    ChartSeries:
+      type: object
+      properties:
+        classify:
+          type: string
+        cs_CZ:
+          type: string
+        data:
+          type: array
+          items:
+            type: string
+        de_DE:
+          type: string
+        en_US:
+          type: string
+        es_ES:
+          type: string
+        field:
+          type: string
+        it_IT:
+          type: string
+        legendColor:
+          type: string
+        name:
+          type: string
+        pl_PL:
+          type: string
+        ro_RO:
+          type: string
+        ru_RU:
+          type: string
+        uk_UK:
+          type: string
+        unit:
+          type: string
+        vi_VN:
+          type: string
+        zh_CN:
+          type: string
+    GetStorageChartResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ChartData'
+    WarringRootListEntity:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/WarringListEntity'
+        totalPage:
+          type: integer
+    WarringListEntity:
+      type: object
+      properties:
+        buttonAuthorityTag:
+          type: array
+          items:
+            type: string
+        createDate:
+          type: integer
+          format: int64
+        dataTimeStr:
+          type: string
+        deviceSn:
+          type: string
+        handlePurview:
+          type: string
+        handleUserName:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyTimeStr:
+          type: string
+        plantId:
+          type: string
+        plantName:
+          type: string
+        status:
+          type: string
+        troubleShootingName:
+          type: string
+        warnCode:
+          type: string
+        warringId:
+          type: string
+        warringName:
+          type: string
+        warringType:
+          type: string
+    ListWarningGroupsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/WarringRootListEntity'
+    DeviceWarningEntity:
+      type: object
+      properties:
+        count:
+          type: integer
+        deviceSn:
+          type: string
+    GetWarningCountResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceWarningEntity'
+    UpdateWarningStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    DeviceCommandResult:
+      type: object
+      properties:
+        collectorSn:
+          type: string
+        content:
+          type: string
+        createTime:
+          type: string
+        createType:
+          type: string
+        createUserId:
+          type: string
+        delFlag:
+          type: string
+        deviceSn:
+          type: string
+        id:
+          type: string
+        maxRequestCycle:
+          type: integer
+        modifyTime:
+          type: string
+        modifyUserId:
+          type: string
+        requestInterval:
+          type: integer
+        result:
+          type: string
+        status:
+          type: string
+        type:
+          type: string
+    CreateSettingCommandResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/DeviceCommandResult'
+    DeviceCheckResultEntity:
+      type: object
+      properties:
+        id: {}
+        maxRequestCycle:
+          type: integer
+        requestInterval:
+          type: integer
+        result:
+          type: string
+    GetDeviceCommandStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceCheckResultEntity'
+    ReadDataFromDeviceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceCommandResult'
+    GetCommandSettingOriginalValueResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: string
+    SetDeviceTimeResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceCommandResult'
+    SetReportFrequencyResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    CheckSetCommandPasswordResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    CopyParamConfigResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    DeviceParamImportResult:
+      type: object
+      properties:
+        code:
+          type: string
+        msg:
+          type: string
+    ImportParamConfigResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceParamImportResult'
+    ParameterImplRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        data: {}
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterImplEntity'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    ParameterImplEntity:
+      type: object
+      properties:
+        deviceSn:
+          type: string
+        fileName:
+          type: string
+        id:
+          type: string
+        remarks:
+          type: string
+        status:
+          type: string
+    ListParamCopySourcesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ParameterImplRootEntity'
+    DeviceUpdateLogPage:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeviceUpdateLog'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    DeviceUpdateLog:
+      type: object
+      properties:
+        chipType:
+          type: string
+        collectorSn:
+          type: string
+        collectorType:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        dataScope:
+          type: string
+        dataScopeUserId:
+          type: string
+        delFlag:
+          type: string
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+        deviceType:
+          type: integer
+        downloadTime:
+          type: integer
+          format: int64
+        endCreateTime:
+          type: string
+        endDownloadTime:
+          type: string
+        endInstallTime:
+          type: string
+        firmwareName:
+          type: string
+        id:
+          type: string
+        installPercent:
+          type: string
+        installTime:
+          type: integer
+          format: int64
+        log:
+          type: string
+        logs:
+          type: array
+          items:
+            type: string
+        modId:
+          type: string
+        modifyTime:
+          type: string
+        modifyUserId:
+          type: string
+        newVersion:
+          type: string
+        oldVersion:
+          type: string
+        otherUserId:
+          type: string
+        pageNum:
+          type: string
+        pageSize:
+          type: string
+        percent:
+          type: string
+        realName:
+          type: string
+        source:
+          type: string
+        startCreateTime:
+          type: string
+        startDownloadTime:
+          type: string
+        startInstallTime:
+          type: string
+        status:
+          type: integer
+        systemTimeZone:
+          type: string
+        timeZone:
+          type: string
+        type:
+          type: string
+        updatePackageInfoId:
+          type: string
+        updateStatus:
+          type: boolean
+        useType:
+          type: string
+    ListDeviceUpdateLogsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/DeviceUpdateLogPage'
+    BleManagerRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        data: {}
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BleManagerEntity'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    BleManagerEntity:
+      type: object
+      properties:
+        bleFileId:
+          type: integer
+          format: int64
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        createUserName:
+          type: string
+        delFlag:
+          type: string
+        downFilePath:
+          type: string
+        downPackageJson:
+          type: string
+        downTime:
+          type: integer
+          format: int64
+        fileId:
+          type: string
+        fileUrl:
+          type: string
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        newFlag:
+          type: string
+        packageCombinatRealtionInfoVOS:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlePackageEntity'
+        progressInt:
+          type: integer
+        readFlag:
+          type: string
+        remark:
+          type: string
+        state:
+          type: integer
+        updateType:
+          type: string
+        updateVersion:
+          type: string
+        versionName:
+          type: string
+    BlePackageEntity:
+      type: object
+      properties:
+        deviceModel:
+          type: string
+        id:
+          type: string
+        subTypeCode:
+          type: string
+        typeCode:
+          type: string
+        updateCombinatId:
+          type: string
+        updatePackageInfoId:
+          type: string
+        updateWeight:
+          type: integer
+        useType:
+          type: string
+        version:
+          type: string
+    ListUpdatePackagesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/BleManagerRootEntity'
+    MarkUpdatePackageReadResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ListPackageUsersResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TerminalUserRootListEntity'
+    SavePackageUsersResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    DeletePackageUserResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    BleManagerHistoryRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        data: {}
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/BleManagerHistoryEntity'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    BleManagerHistoryEntity:
+      type: object
+      properties:
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        createUserName:
+          type: string
+        delFlag:
+          type: integer
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        result:
+          type: string
+        showSn:
+          type: string
+        updateBluetoothLogDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateBluetoothLogDetail'
+        updateBluetoothLogDeviceList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateBluetoothLogDetail'
+        updatePackageCombinatId:
+          type: string
+        updateTime:
+          type: integer
+          format: int64
+        updateVersion:
+          type: string
+        versionName:
+          type: string
+    UpdateBluetoothLogDetail:
+      type: object
+      properties:
+        controlVersion:
+          type: string
+        controlVersion2:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        dataScope: {}
+        dataScopeUserId: {}
+        delFlag:
+          type: boolean
+        deviceModel:
+          type: string
+        deviceSn:
+          type: string
+        deviceType:
+          type: string
+        displayVersion:
+          type: string
+        dmsUpdateBluetoothLogId:
+          type: string
+        firmwareVersion:
+          type: string
+        flashVersion:
+          type: string
+        id:
+          type: string
+        isCheckFlash:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        moduleVersion:
+          type: string
+        otherUserId: {}
+        result:
+          type: string
+        subTypeCode:
+          type: string
+        typeCode:
+          type: string
+        updatePackageInfoId:
+          type: string
+        useType:
+          type: string
+        version:
+          type: string
+    ListBluetoothUpdateLogsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/BleManagerHistoryRootEntity'
+    SaveBluetoothUpdateLogResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    SearchBluetoothLogDeviceSnResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/SearchSNRootEntity'
+    TagLabelRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlantTag'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    ListTagsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/TagLabelRootEntity'
+    ListAllTagsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/PlantTag'
+    ListTagNamesResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            type: array
+            items:
+              type: string
+    SaveTagResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/PlantTag'
+    DeleteTagResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ProductItemEntity:
+      type: object
+      properties:
+        childClassName:
+          type: string
+        className:
+          type: string
+        content:
+          type: string
+        coverFileId:
+          type: string
+        coverUrl:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        delFlag:
+          type: integer
+        enableFlag: {}
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        name:
+          type: string
+        optionChildId:
+          type: string
+        optionId:
+          type: string
+        productManualButtonVO:
+          $ref: '#/components/schemas/ButtonInfoEntity'
+    ButtonInfoEntity:
+      type: object
+      properties:
+        action:
+          type: integer
+        buttonInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ButtonInfo'
+        buttonName:
+          type: string
+    ButtonInfo:
+      type: object
+      properties:
+        langCode:
+          type: string
+        name:
+          type: string
+        titleName:
+          type: string
+        url:
+          type: string
+    GetProductManualDetailsResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductItemEntity'
+    ProductMainEntity:
+      type: object
+      properties:
+        classId:
+          type: string
+        className: {}
+        coverUrl:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        dataContext:
+          type: string
+        dataDesc: {}
+        dataState:
+          type: integer
+        dataType:
+          type: integer
+        dataUrl: {}
+        delFlag: {}
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        name:
+          type: string
+        parentName: {}
+        productIntroduceExtraUrlSaveVOSList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductPDFEntity'
+        qrCodeUrl: {}
+        title:
+          type: string
+    ProductPDFEntity:
+      type: object
+      properties:
+        dictionaryId:
+          type: string
+        iconUrl:
+          type: string
+        imgUrl:
+          type: string
+        langCode:
+          type: string
+        langName:
+          type: string
+        name:
+          type: string
+        productIntroduceId:
+          type: string
+        url:
+          type: string
+    VideoListEntity:
+      type: object
+      properties:
+        coverId:
+          type: string
+        coverUrl:
+          type: string
+        createTime:
+          type: integer
+          format: int64
+        createUserId:
+          type: string
+        dataContext:
+          type: string
+        dataDesc:
+          type: string
+        delFlag:
+          type: integer
+        describeText:
+          type: string
+        deviceModel:
+          type: string
+        deviceType:
+          type: string
+        enableStatus:
+          type: integer
+        fileName:
+          type: string
+        id:
+          type: string
+        modifyTime:
+          type: integer
+          format: int64
+        modifyUserId:
+          type: string
+        name:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+        voidName:
+          type: string
+    GetProductIntroduceDetailResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            oneOf:
+            - $ref: '#/components/schemas/ProductMainEntity'
+            - $ref: '#/components/schemas/VideoListEntity'
+    VideoListRootEntity:
+      type: object
+      properties:
+        currentPage:
+          type: string
+        dataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoListEntity'
+        pageSize:
+          type: string
+        total:
+          type: string
+        totalPage:
+          type: string
+    ListProductIntroduceResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/VideoListRootEntity'
+    ReadProductUpdateResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ProductSubSettingEntity:
+      type: object
+      properties:
+        receiveEmail:
+          type: string
+        subscribeFlag:
+          type: integer
+    GetProductUpdateSubscriptionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductSubSettingEntity'
+    UpdateProductUpdateSubscriptionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data: {}
+    ProductInfoStatus:
+      type: object
+      properties:
+        hasUnread:
+          type: boolean
+    GetProductUpdateUnreadStatusResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiEnvelope'
+      - type: object
+        properties:
+          data:
+            $ref: '#/components/schemas/ProductInfoStatus'
